@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Space Invaders Vertical</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <div class="leaderboard">
+    <h1 id="leaderboard-scores">Leaderboard</h1>
+      <p id="leadrboard-user">#1, User1: 24<br>
+       #1, User2: 24<br>
+       #2, User3: 18
+    </p>
+  </div>
+
+  <div class="highscore">
+    <h2 id="highscore-stats">Highscores</h2>
+    <p id="highscore-user">#1: 24<br>
+       #2: 24<br>
+       #3: 18
+    </p>
+  </div>
+
+  <canvas id="game" width="800" height="940"></canvas>
+  
+
+  <!-- JS, pay attention to the order -->
+  <script src="../js/utils.js"></script>
+  <script src="../js/player.js"></script>
+  <script src="../js/enemy.js"></script>
+  <script src="../js/bullet.js"></script>
+  <script src="../js/xp.js"></script>
+  <script src="../js/powerups.js"></script>
+  <script src="../js/input.js"></script>
+  <script src="../js/ui.js"></script>
+  <script src="../js/index.js"></script>
+</body>
+</html>

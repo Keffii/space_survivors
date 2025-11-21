@@ -1,0 +1,58 @@
+body {
+  background: #000;
+  margin: 0;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
+
+canvas {
+  display: block;
+  margin: 0 auto;
+  background: #111;
+}
+
+.leaderboard {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.highscore {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 100;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-end;
+}
+
+.highscore h2 {
+  margin: 0 0 8px 0;
+  font-size: 30px;
+}
+
+.highscore p {
+  margin: 0;
+  font-size: 30px;
+  text-align: right;
+}
+
+.leaderboard h1 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.leaderboard p {
+  margin: 0;
+  font-size: 30px;
+  text-align: left;
+}
