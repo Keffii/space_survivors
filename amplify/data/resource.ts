@@ -22,10 +22,11 @@ const schema = a.schema({
   */
   Devices: a
     .model({
-      device_id: a.id(),
+      device_id: a.id().required(),
       owner: a.string().required(),
       status: a.string(),
     })
+    .identifier(['device_id'])
     .authorization((allow) => [allow.owner()]),
 });
 
