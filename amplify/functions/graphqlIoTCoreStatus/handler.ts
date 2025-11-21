@@ -21,15 +21,19 @@ export const handler: Handler = async (event, context) => {
 
     /** @type {import('node-fetch').RequestInit} */
 
+    // Extract clientId from IoT Core event
+    const deviceId = event.clientId;
+    const status = event.eventType;
+
     // Mutate
     request = new Request(GRAPHQL_ENDPOINT, {
         method: 'POST',
         headers: headers,
         body: JSON.stringify({
-            query: `mutation MyMutation {
-                    updateDevices(input: {
-                        device_id: "${event.device_id}", 
-                        status: "${event.eventType}"
+            query: `mutation UpdateDeviceStatus {
+                    updateDevice(input: {
+                        device_id: "${deviceId}", 
+                        status: "${status}"
                         }) 
                     {
                         device_id

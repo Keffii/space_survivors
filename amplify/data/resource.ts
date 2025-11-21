@@ -16,7 +16,7 @@ const schema = a.schema({
   Device: a
     .model({
       device_id: a.id().required(),
-      owner: a.string().required(),
+      owner: a.string(),
       status: a.string(),
     })
     .identifier(['device_id'])
