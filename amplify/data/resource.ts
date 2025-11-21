@@ -22,7 +22,7 @@ const schema = a.schema({
   */
   Devices: a
     .model({
-      device_id: a.id().required(),
+      device_id: a.id().required(), //primary key
       owner: a.string().required(),
       status: a.string(),
     })
