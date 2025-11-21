@@ -13,16 +13,9 @@ const schema = a.schema({
     })
     .authorization((allow) => [allow.owner()]),
   
-  /* Devices table
-   - `device_id`: the device identifier (string). To *use* this as the primary key you can set
-     the model `id` to the device_id when creating items (see notes below), or add a custom
-     primary key/index via your Amplify backend definitions before deploy.
-   - `owner`: string, intended to store the owner/user id (required by your app logic).
-   - `status`: optional string (e.g. "online", "offline", etc.).
-  */
   Device: a
     .model({
-      device_id: a.id().required(), //primary key
+      device_id: a.id().required(),
       owner: a.string().required(),
       status: a.string(),
     })
