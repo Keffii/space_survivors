@@ -1,4 +1,8 @@
-import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
+import { type ClientSchema, a, defineData, defineFunction } from "@aws-amplify/backend";
+
+const iotCoreHandler = defineFunction({
+  entry: './iot-core-handler/handler.ts'
+})
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -7,22 +11,21 @@ specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
-  Todo: a
-    .model({
-      content: a.string(),
-    })
-    .authorization((allow) => [allow.owner()]),
-  
+  // Todo: a
+  //  .model({
+  //    content: a.string(),
+  //  })
+  //  .authorization((allow) => [allow.owner()]),
+
   Device: a
     .model({
-      device_id: a.id().required(),
+      device_id: a.string().required(),
       owner: a.string().required(),
-      status: a.string(),
+      status: a.string()
     })
     .identifier(['device_id'])
     .authorization((allow) => [allow.owner(), allow.publicApiKey()]),
 
-  // Telemetry data from IoT devices
   Telemetry: a
     .model({
       device_id: a.string().required(),
@@ -33,7 +36,37 @@ const schema = a.schema({
     })
     .identifier(['device_id', 'timestamp'])
     .authorization((allow) => [allow.owner(), allow.publicApiKey()]),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  AddTelemetry: a
+    .mutation()
+    .arguments({
+      device_id: a.string().required(),
+      timestamp: a.timestamp().required(),
+      temperature: a.float(),
+      humidity: a.float(),
+      owner: a.string().required()
+    }
+    )
+    .returns(a.ref("Telemetry"))
+    .authorization((allow) => [allow.publicApiKey()])
+    .handler(a.handler.function(iotCoreHandler)),
 });
+
+
 
 export type Schema = ClientSchema<typeof schema>;
 
@@ -41,9 +74,8 @@ export const data = defineData({
   schema,
   authorizationModes: {
     defaultAuthorizationMode: "userPool",
-    // API Key is used for a.allow.public() rules
     apiKeyAuthorizationMode: {
-      expiresInDays: 30,
+      expiresInDays: 365,
     },
   },
 });
@@ -53,7 +85,7 @@ Go to your frontend source code. From your client-side code, generate a
 Data client to make CRUDL requests to your table. (THIS SNIPPET WILL ONLY
 WORK IN THE FRONTEND CODE FILE.)
 
-Using JavaScript or Next.js React Server Components, Middleware, Server 
+Using JavaScript or Next.js React Server Components, Middleware, Server
 Actions or Pages Router? Review how to generate Data clients for those use
 cases: https://docs.amplify.aws/gen2/build-a-backend/data/connect-to-API/
 =========================================================================*/
