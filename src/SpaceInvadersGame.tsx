@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { View, Card, Heading, Text, Flex } from '@aws-amplify/ui-react';
+// Import the Amplify Gen 2 data client generator for making database requests
+import { generateClient } from 'aws-amplify/data';
+// Import the TypeScript schema types generated from amplify/data/resource.ts
+import type { Schema } from '../amplify/data/resource';
 
-// TODO: Import generateClient and Schema types for database integration
-// TODO: Create client instance for database operations
+// Create a typed client instance to interact with the Amplify Data (GraphQL API)
+const client = generateClient<Schema>();
 
 interface LeaderboardEntry {
   username: string;
