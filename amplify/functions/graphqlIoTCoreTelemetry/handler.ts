@@ -32,7 +32,7 @@ export const handler: Handler = async (event, context) => {
         headers: headers,
         body: JSON.stringify({
             query: `query MyQuery {
-                        getDevices(device_id: "${event.device_id}") {
+                        getDevice(device_id: "${event.device_id}") {
                             device_id
                             owner
                         }
@@ -61,8 +61,10 @@ export const handler: Handler = async (event, context) => {
     }
 
     // if the device exists and a owner is found, add the telemetry
-    if (responseBody.data.getDevices?.owner) {
-        // Mutate
+    if (responseBody.data.getDevice?.owner) {
+        // Mutate - Convert timestamp from milliseconds to seconds
+        const timestampInSeconds = Math.floor(event.timestamp / 1000);
+        
         request = new Request(GRAPHQL_ENDPOINT, {
             method: 'POST',
             headers: headers,
@@ -71,9 +73,9 @@ export const handler: Handler = async (event, context) => {
                     createTelemetry(input: {
                         device_id: "${event.device_id}", 
                         temperature: ${event.temperature}, 
-                        owner: "${responseBody.data.getDevices.owner}", 
+                        owner: "${responseBody.data.getDevice.owner}", 
                         humidity: ${event.humidity}, 
-                        timestamp: ${event.timestamp}
+                        timestamp: ${timestampInSeconds}
                         }) 
                     {
                         temperature
