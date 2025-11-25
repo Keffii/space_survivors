@@ -90,7 +90,7 @@ function gameOver() {
 
   // Send Score to react component
   window.parent.postMessage({
-    type: 'Game_OVER',
+    type: 'GAME_OVER',
     score: score,
   }, '*');
 }

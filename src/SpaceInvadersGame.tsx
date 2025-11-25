@@ -8,21 +8,12 @@ import type { Schema } from '../amplify/data/resource';
 // Create a typed client instance to interact with the Amplify Data (GraphQL API)
 const client = generateClient<Schema>();
 
-interface LeaderboardEntry {
-  username: string;
-  score: number;
-  rank: number;
-}
-
 /*SpaceInvadersGame component
   Wraps the canvas game with React and provides UI for leaderboard/stats
  */
 const SpaceInvadersGame: React.FC<{ username?: string }> = ({ username }) => {
-  const [leaderboard] = useState<LeaderboardEntry[]>([]);
-  const [highScore] = useState(0);
-  const [activePlayerCount] = useState(0);
+  const [highScores, setHighScores] = useState<Array<Schema["HighScore"]["type"]>>([]);
 
-  // TODO: Fetch high score from database
   const saveHighScore = async (username: string, score: number) => {
     await client.models.HighScore.create({
       username,
@@ -32,16 +23,23 @@ const SpaceInvadersGame: React.FC<{ username?: string }> = ({ username }) => {
   }
 
 useEffect(() => {
-    const handleGameMessage = (event: MessageEvent) => {
-      if (event.data.type === 'GAME_OVER' && username) {
-        saveHighScore(username || 'Anonymous', event.data.score);
-      }
+  client.models.HighScore.observeQuery().subscribe({
+    next: (data) => { setHighScores([...data.items]) },
+  });
+}, []);
+
+useEffect(() => {
+  const handleGameMessage = (event: MessageEvent) => {
+    if (event.data.type === 'GAME_OVER' && username) {
+      saveHighScore(username || 'Anonymous', event.data.score);
     }
-    window.addEventListener('message', handleGameMessage);
-    return () => {
-      window.removeEventListener('message', handleGameMessage);
-    };
-  }, [username]);
+  };
+  
+  window.addEventListener('message', handleGameMessage);
+  return () => {
+    window.removeEventListener('message', handleGameMessage);
+  };
+}, [username]);
 
   // TODO: Track active players from database
 
@@ -56,13 +54,6 @@ useEffect(() => {
           <Text fontSize="0.9rem">#1, User1: 24</Text>
           <Text fontSize="0.9rem">#1, User2: 24</Text>
           <Text fontSize="0.9rem">#2, User3: 18</Text>
-          {leaderboard.length > 0 && (
-            leaderboard.map((entry) => (
-              <Text key={entry.rank} fontSize="0.9rem">
-                #{entry.rank} {entry.username}: {entry.score}
-              </Text>
-            ))
-          )}
         </Card>
 
         {/* Game in iframe - Center */}
@@ -78,20 +69,19 @@ useEffect(() => {
 
         {/* Highscores Card - Far Right */}
         <Card variation="outlined" width="200px" height="940px">
-          <Heading level={4}>Highscores</Heading>
-          <Text fontSize="0.9rem">#1: 24</Text>
-          <Text fontSize="0.9rem">#2: 24</Text>
-          <Text fontSize="0.9rem">#3: 18</Text>
-          <View marginTop="1.5rem">
-            <Heading level={5}>Stats</Heading>
-            <Text fontSize="0.9rem">High Score: {highScore}</Text>
-            <Text fontSize="0.9rem">Active Players: {activePlayerCount}</Text>
-            {username && (
-              <Text fontSize="0.9rem" marginTop="1rem">
-                Playing as: {username}
-              </Text>
-            )}
-          </View>
+          <Heading level={4}>HighScore</Heading>
+          {highScores.length > 0 ? (
+            highScores
+              .sort((a, b) => b.score - a.score) // Sort by score descending
+              .slice(0, 10) // Show top 10
+              .map((entry, index) => (
+                <Text key={entry.id} fontSize="0.9rem">
+                  #{index + 1} {entry.username}: {entry.score}
+                </Text>
+              ))
+          ) : (
+            <Text fontSize="0.9rem">No scores yet</Text>
+          )}
         </Card>
       </Flex>
     </View>
