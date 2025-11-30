@@ -85,29 +85,20 @@ useEffect(() => {
     setIotEnabled(false);
   };
 
-  // Compute leaderboard: top 5 scores per user, then show global top 20
+  // Compute global leaderboard: one entry per user (their best score), top 5
   const leaderboard = React.useMemo(() => {
-    // Group scores by user (using owner field)
-    const scoresByUser = highScores.reduce((acc, entry) => {
+    const bestByUser = highScores.reduce((acc, entry) => {
       const ownerId = ((entry as any).owner as string) || entry.username;
-      if (!acc[ownerId]) {
-        acc[ownerId] = [];
+      const existing = acc[ownerId];
+      if (!existing || entry.score > existing.score) {
+        acc[ownerId] = entry;
       }
-      acc[ownerId].push(entry);
       return acc;
-    }, {} as Record<string, Schema["HighScore"]["type"][]>);
+    }, {} as Record<string, Schema["HighScore"]["type"]>);
 
-    // Keep only top 5 scores per user
-    const top5PerUser = Object.values(scoresByUser).flatMap(userScores =>
-      userScores
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 5)
-    );
-
-    // Sort all scores and return top 20 for the global leaderboard
-    return top5PerUser
+    return Object.values(bestByUser)
       .sort((a, b) => b.score - a.score)
-      .slice(0, 20);
+      .slice(0, 5);
   }, [highScores]);
 
   return (
@@ -115,7 +106,19 @@ useEffect(() => {
       <Flex direction="row" gap="1rem" wrap="nowrap" justifyContent="space-between" alignItems="flex-start">
         {/* Left Column: ESP32 Controller + Leaderboard (stacked) */}
         <Flex direction="column" gap="1rem" style={{ width: '280px', alignItems: 'stretch' }}>
-          <Card variation="outlined" width="100%">
+          <Card
+            className="themed-card"
+            variation="outlined"
+            width="100%"
+            style={{
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.95), rgba(250,250,255,0.9))',
+              borderRadius: '6px',
+              border: '1px solid rgba(0,0,0,0.06)',
+              boxShadow: '0 6px 18px rgba(16,24,40,0.06)',
+              backdropFilter: 'blur(6px) saturate(120%)',
+              WebkitBackdropFilter: 'blur(6px) saturate(120%)'
+            }}
+          >
             <Heading level={4}>ESP32 Controller</Heading>
             <SelectField
               label="Device ID"
@@ -167,9 +170,23 @@ useEffect(() => {
             )}
           </Card>
 
-          <Card variation="outlined" width="100%" height="480px">
+          <Card
+            className="themed-card"
+            variation="outlined"
+            width="100%"
+            height="500px"
+            style={{
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.95), rgba(250,250,255,0.9))',
+              borderRadius: '6px',
+              border: '1px solid rgba(0,0,0,0.06)',
+              boxShadow: '0 6px 18px rgba(16,24,40,0.06)',
+              backdropFilter: 'blur(6px) saturate(120%)',
+              WebkitBackdropFilter: 'blur(6px) saturate(120%)'
+            }}
+          >
             <Heading level={4} style={{ marginBottom: '0.5rem' }}>
-              👑 Leaderboard
+              <i className="fa-solid fa-crown icon icon-leaderboard" aria-hidden></i>
+              Leaderboard
             </Heading>
             {leaderboard.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -263,93 +280,115 @@ useEffect(() => {
           />
         </View>
 
-        {/* Highscores Card - Far Right */}
-        <Card variation="outlined" width="330px" height="940px">
+        {/* Highscores Card - Far Right (personal view, original styling) */}
+        <Card
+          className="themed-card"
+          variation="outlined"
+          width="330px"
+          height="940px"
+          style={{
+            background: 'linear-gradient(180deg, rgba(255,255,255,0.95), rgba(250,250,255,0.9))',
+            borderRadius: '6px',
+            border: '1px solid rgba(0,0,0,0.06)',
+            boxShadow: '0 6px 18px rgba(16,24,40,0.06)',
+            backdropFilter: 'blur(6px) saturate(120%)',
+            WebkitBackdropFilter: 'blur(6px) saturate(120%)'
+          }}
+        >
           <Heading level={4} style={{ marginBottom: '0.5rem' }}>
-            🏆 Top 20 Highscores
+            <i className="fa-solid fa-trophy icon icon-highscore" aria-hidden></i>
+            Top Highscores
           </Heading>
-          {highScores.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {highScores
+          {highScores.length > 0 && username ? (
+            (() => {
+              const myScores = highScores
+                .filter(entry => ((entry as any).owner === username) || entry.username === username)
                 .sort((a, b) => b.score - a.score)
-                .slice(0, 20)
-                .map((entry, index) => {
-                  const ageInSeconds = (Date.now() - entry.timestamp) / 1000;
-                  const isNew = ageInSeconds < 10;
-                  const isTopThree = index < 3;
-                  
-                  let medal = '';
-                  let bgColor = 'transparent';
-                  let borderColor = '#e0e0e0';
-                  
-                  if (isNew) {
-                    bgColor = 'rgba(255, 0, 0, 0.15)';
-                    borderColor = '#ff6b6b';
-                  } else if (isTopThree) {
-                    if (index === 0) {
-                      medal = '🥇';
-                      bgColor = 'rgba(255, 215, 0, 0.15)';
-                      borderColor = '#ffd700';
-                    } else if (index === 1) {
-                      medal = '🥈';
-                      bgColor = 'rgba(192, 192, 192, 0.15)';
-                      borderColor = '#c0c0c0';
-                    } else {
-                      medal = '🥉';
-                      bgColor = 'rgba(205, 127, 50, 0.15)';
-                      borderColor = '#cd7f32';
+                .slice(0, 20);
+
+              return myScores.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {myScores.map((entry, index) => {
+                    const ageInSeconds = (Date.now() - entry.timestamp) / 1000;
+                    const isNew = ageInSeconds < 10;
+                    const isTopThree = index < 3;
+                    
+                    let medal = '';
+                    let bgColor = 'transparent';
+                    let borderColor = '#e0e0e0';
+                    
+                    if (isNew) {
+                      bgColor = 'rgba(255, 0, 0, 0.15)';
+                      borderColor = '#ff6b6b';
+                    } else if (isTopThree) {
+                      if (index === 0) {
+                        medal = '🥇';
+                        bgColor = 'rgba(255, 215, 0, 0.15)';
+                        borderColor = '#ffd700';
+                      } else if (index === 1) {
+                        medal = '🥈';
+                        bgColor = 'rgba(192, 192, 192, 0.15)';
+                        borderColor = '#c0c0c0';
+                      } else {
+                        medal = '🥉';
+                        bgColor = 'rgba(205, 127, 50, 0.15)';
+                        borderColor = '#cd7f32';
+                      }
                     }
-                  }
-                  
-                  return (
-                    <div
-                      key={entry.id}
-                      style={{
-                        backgroundColor: bgColor,
-                        padding: '6px 10px',
-                        borderRadius: '4px',
-                        border: `1px solid ${borderColor}`,
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        fontSize: '0.85rem',
-                        fontWeight: isTopThree ? '600' : '400',
-                        boxShadow: isNew ? '0 2px 4px rgba(255,0,0,0.2)' : isTopThree ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
-                      }}
-                    >
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-                        <span style={{ 
-                          minWidth: '32px', 
-                          color: isTopThree ? borderColor : '#666',
-                          fontWeight: '600'
-                        }}>
-                          {medal || `#${index + 1}`}
+
+                    return (
+                      <div
+                        key={entry.id}
+                        style={{
+                          backgroundColor: bgColor,
+                          padding: '6px 10px',
+                          borderRadius: '4px',
+                          border: `1px solid ${borderColor}`,
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          fontSize: '0.85rem',
+                          fontWeight: isTopThree ? '600' : '400',
+                          boxShadow: isNew ? '0 2px 4px rgba(255,0,0,0.2)' : isTopThree ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
+                        }}
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                          <span style={{ 
+                            minWidth: '32px', 
+                            color: isTopThree ? borderColor : '#666',
+                            fontWeight: '600'
+                          }}>
+                            {medal || `#${index + 1}`}
+                          </span>
+                          <span style={{ 
+                            overflow: 'hidden', 
+                            textOverflow: 'ellipsis', 
+                            whiteSpace: 'nowrap',
+                            flex: 1
+                          }}>
+                            {entry.username}
+                          </span>
                         </span>
                         <span style={{ 
-                          overflow: 'hidden', 
-                          textOverflow: 'ellipsis', 
-                          whiteSpace: 'nowrap',
-                          flex: 1
+                          fontWeight: '700', 
+                          color: isTopThree ? borderColor : '#333',
+                          marginLeft: '12px',
+                          fontSize: isTopThree ? '1rem' : '0.9rem'
                         }}>
-                          {entry.username}
+                          {entry.score.toLocaleString()}
                         </span>
-                      </span>
-                      <span style={{ 
-                        fontWeight: '700', 
-                        color: isTopThree ? borderColor : '#333',
-                        marginLeft: '12px',
-                        fontSize: isTopThree ? '1rem' : '0.9rem'
-                      }}>
-                        {entry.score.toLocaleString()}
-                      </span>
-                    </div>
-                  );
-                })}
-            </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <Text fontSize="0.9rem" style={{ color: '#999', fontStyle: 'italic' }}>
+                  You don't have any scores yet
+                </Text>
+              );
+            })()
           ) : (
-            <Text fontSize="0.9rem" style={{ color: '#999', fontStyle: 'italic' }}>
-              No scores yet - be the first!
-            </Text>
+            null
           )}
         </Card>
       </Flex>
