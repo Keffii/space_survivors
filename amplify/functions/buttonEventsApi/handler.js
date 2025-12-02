@@ -1,12 +1,14 @@
-"use strict";
-const AWS = require('aws-sdk');
-const dynamo = new AWS.DynamoDB.DocumentClient({ region: process.env.AWS_REGION || 'eu-central-1' });
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, ScanCommand } from '@aws-sdk/lib-dynamodb';
+
+const client = new DynamoDBClient({ region: process.env.AWS_REGION || 'eu-central-1' });
+const dynamo = DynamoDBDocumentClient.from(client);
 
 function floorToMinute(ts) {
   return Math.floor(ts / 60000) * 60000;
 }
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
   const qs = event.queryStringParameters || {};
   const start = qs.start ? Number(qs.start) : Date.now() - 60 * 60 * 1000;
   const end = qs.end ? Number(qs.end) : Date.now();
@@ -32,7 +34,7 @@ exports.handler = async (event) => {
     let lastEvaluatedKey;
     do {
       if (lastEvaluatedKey) params.ExclusiveStartKey = lastEvaluatedKey;
-      const data = await dynamo.scan(params).promise();
+      const data = await dynamo.send(new ScanCommand(params));
       items = items.concat(data.Items || []);
       lastEvaluatedKey = data.LastEvaluatedKey;
     } while (lastEvaluatedKey);

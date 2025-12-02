@@ -1,8 +1,10 @@
-"use strict";
-const AWS = require('aws-sdk');
-const dynamo = new AWS.DynamoDB.DocumentClient({ region: process.env.AWS_REGION || 'eu-central-1' });
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, ScanCommand } from '@aws-sdk/lib-dynamodb';
 
-exports.handler = async (event) => {
+const client = new DynamoDBClient({ region: process.env.AWS_REGION || 'eu-central-1' });
+const dynamo = DynamoDBDocumentClient.from(client);
+
+export const handler = async (event) => {
   const qs = event.queryStringParameters || {};
   const limit = qs.limit ? Number(qs.limit) : 10;
   const TableName = process.env.HIGHSCORE_TABLE || 'HighScore';
@@ -13,7 +15,7 @@ exports.handler = async (event) => {
     const params = { TableName };
     do {
       if (lastEvaluatedKey) params.ExclusiveStartKey = lastEvaluatedKey;
-      const data = await dynamo.scan(params).promise();
+      const data = await dynamo.send(new ScanCommand(params));
       items = items.concat(data.Items || []);
       lastEvaluatedKey = data.LastEvaluatedKey;
     } while (lastEvaluatedKey);
