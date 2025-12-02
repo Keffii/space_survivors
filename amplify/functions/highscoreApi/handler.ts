@@ -1,36 +1,85 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, ScanCommand } from '@aws-sdk/lib-dynamodb';
 import type { APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda';
 
-const client = new DynamoDBClient({ region: process.env.AWS_REGION || 'eu-central-1' });
-const dynamo = DynamoDBDocumentClient.from(client);
+const GRAPHQL_ENDPOINT = process.env.API_ENDPOINT as string;
+const GRAPHQL_API_KEY = process.env.API_KEY as string;
+
+interface HighScoreItem {
+  username: string;
+  score: number;
+  timestamp: number;
+}
+
+interface GraphQLResponse {
+  data?: {
+    listHighScores?: {
+      items: HighScoreItem[];
+      nextToken?: string;
+    };
+  };
+  errors?: Array<{ message: string }>;
+}
 
 export const handler: APIGatewayProxyHandler = async (event): Promise<APIGatewayProxyResult> => {
   const qs = event.queryStringParameters || {};
   const limit = qs.limit ? Number(qs.limit) : 10;
-  const TableName = process.env.HIGHSCORE_TABLE || 'HighScore';
+
+  const query = `
+    query ListHighScores($nextToken: String) {
+      listHighScores(nextToken: $nextToken, limit: 1000) {
+        items {
+          username
+          score
+          timestamp
+        }
+        nextToken
+      }
+    }
+  `;
+
+  const items: HighScoreItem[] = [];
+  let nextToken: string | undefined;
 
   try {
-    let items = [];
-    let lastEvaluatedKey;
-    const params = { TableName };
     do {
-      if (lastEvaluatedKey) params.ExclusiveStartKey = lastEvaluatedKey;
-      const data = await dynamo.send(new ScanCommand(params));
-      items = items.concat(data.Items || []);
-      lastEvaluatedKey = data.LastEvaluatedKey;
-    } while (lastEvaluatedKey);
+      const response = await fetch(GRAPHQL_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'x-api-key': GRAPHQL_API_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          query,
+          variables: { nextToken }
+        })
+      });
 
-    items.sort((a, b) => (b.score || 0) - (a.score || 0));
-    const top = items.slice(0, limit);
+      const result = await response.json() as GraphQLResponse;
+      
+      if (result.errors) {
+        console.error('GraphQL errors:', result.errors);
+        return { statusCode: 500, body: JSON.stringify({ error: 'GraphQL error', details: result.errors }) };
+      }
 
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ scores: top })
-    };
+      if (result.data?.listHighScores?.items) {
+        items.push(...result.data.listHighScores.items);
+      }
+      nextToken = result.data?.listHighScores?.nextToken;
+    } while (nextToken);
   } catch (err) {
-    console.error(err);
-    return { statusCode: 500, body: JSON.stringify({ error: 'dynamo error' }) };
+    console.error('Fetch error', err);
+    return { statusCode: 500, body: JSON.stringify({ error: 'fetch error' }) };
   }
+
+  // Sort by score descending and take top N
+  items.sort((a, b) => (b.score || 0) - (a.score || 0));
+  const top = items.slice(0, limit);
+
+  return {
+    statusCode: 200,
+    headers: { 
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*'
+    },
+    body: JSON.stringify({ scores: top })
+  };
 };

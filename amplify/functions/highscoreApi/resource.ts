@@ -1,13 +1,11 @@
-import { defineFunction } from '@aws-amplify/backend';
+import { defineFunction, secret } from '@aws-amplify/backend';
 
 export const highscoreApi = defineFunction({
   name: 'highscoreApi',
   entry: './handler.ts',
   environment: {
-    HIGHSCORE_TABLE: 'HighScore'
+    API_ENDPOINT: secret('CUSTOM_LAMBDA_GRAPHQL_ENDPOINT'),
+    API_KEY: secret('CUSTOM_LAMBDA_GRAPHQL_KEY')
   },
-  timeoutSeconds: 30,
-  bundling: {
-    externalModules: ['@aws-sdk/*']
-  }
+  timeoutSeconds: 30
 });

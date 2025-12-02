@@ -1,13 +1,11 @@
-import { defineFunction } from '@aws-amplify/backend';
+import { defineFunction, secret } from '@aws-amplify/backend';
 
 export const buttonEventsApi = defineFunction({
   name: 'buttonEventsApi',
   entry: './handler.ts',
   environment: {
-    BUTTON_EVENTS_TABLE: 'ButtonEvents'
+    API_ENDPOINT: secret('CUSTOM_LAMBDA_GRAPHQL_ENDPOINT'),
+    API_KEY: secret('CUSTOM_LAMBDA_GRAPHQL_KEY')
   },
-  timeoutSeconds: 30,
-  bundling: {
-    externalModules: ['@aws-sdk/*']
-  }
+  timeoutSeconds: 30
 });
