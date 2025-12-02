@@ -1,0 +1,33 @@
+"use strict";
+const AWS = require('aws-sdk');
+const dynamo = new AWS.DynamoDB.DocumentClient({ region: process.env.AWS_REGION || 'eu-central-1' });
+
+exports.handler = async (event) => {
+  const qs = event.queryStringParameters || {};
+  const limit = qs.limit ? Number(qs.limit) : 10;
+  const TableName = process.env.HIGHSCORE_TABLE || 'HighScore';
+
+  try {
+    let items = [];
+    let lastEvaluatedKey;
+    const params = { TableName };
+    do {
+      if (lastEvaluatedKey) params.ExclusiveStartKey = lastEvaluatedKey;
+      const data = await dynamo.scan(params).promise();
+      items = items.concat(data.Items || []);
+      lastEvaluatedKey = data.LastEvaluatedKey;
+    } while (lastEvaluatedKey);
+
+    items.sort((a, b) => (b.score || 0) - (a.score || 0));
+    const top = items.slice(0, limit);
+
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scores: top })
+    };
+  } catch (err) {
+    console.error(err);
+    return { statusCode: 500, body: JSON.stringify({ error: 'dynamo error' }) };
+  }
+};
