@@ -57,7 +57,7 @@ function drawStartScreen(ctx, canvas) {
   ctx.fillText("SPACE SURVIVORS", canvas.width / 2, canvas.height / 2 - 40);
 
   ctx.font = "24px Arial";
-  ctx.fillText("Press CONFIRM to start", canvas.width / 2, canvas.height / 2 + 20);
+  ctx.fillText("Press CONFIRM/E to start", canvas.width / 2, canvas.height / 2 + 20);
   ctx.textAlign = "start";
 }
 
@@ -72,7 +72,7 @@ function drawGameOver(ctx, canvas, score) {
   ctx.font = "24px Arial";
   ctx.fillText(`Score: ${score}`, canvas.width / 2 - 60, canvas.height / 2 + 20);
   ctx.font = "18px Arial";
-  ctx.fillText("Press CONFIRM to restart", canvas.width / 2 - 115, canvas.height / 2 + 60);
+  ctx.fillText("Press CONFIRM/E to restart", canvas.width / 2 - 115, canvas.height / 2 + 60);
 }
 
 function drawHUD(ctx, score) {
