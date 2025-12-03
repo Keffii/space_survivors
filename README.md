@@ -1,8 +1,3 @@
-<html>
-
-<div id="top"></div>
-
-<div align="center">
   <h1 align="center">SpaceSurvivors</h1>
   <p align="center">IoT-driven arcade game using AWS Amplify and ESP32</p>
 </div>
