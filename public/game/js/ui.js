@@ -80,3 +80,4 @@ function drawHUD(ctx, score) {
   ctx.font = "18px Arial";
   ctx.fillText(`Score: ${score}`, 10, 24);
 }
+
