@@ -204,3 +204,26 @@ After deploying, add an inline policy to the Cognito <b>authenticated</b> role s
 </ul>
 
 ---
+
+<h2 align="center">Scalability</h2>
+
+<ul>
+  <li><b>Support for multiple devices</b> In realtime track connected IoTCore devices and choose your device from the dropdown list</li>
+  <li><b>Renew cognito tokens yearly</b> At the moment cognito tokens doesn't have a expire date. Make cognito tokens only alive for 365 days and ask for the user to renew their token yearly</li>
+  <li><b>Expand gameanalytics</b> Track how long each user is playing per session, their events(buttonevents)</li>
+  <li><b>Threshold message for when near token cap</b> Add a threshold message rule for when the project expands and need more tokens than provided by the free plan</li>
+</ul>
+
+---
+
+<h2 align="center">Grafana</h2>
+
+<ul>
+<img width="1882" height="881" alt="Screenshot 2025-12-04 130822" src="https://github.com/user-attachments/assets/f1e8266b-835e-486c-9bc8-48baa2c3d746" />
+</ul>
+
+---
+
+<h2 align="center">Preview</h2>
+<ul>
+<img width="1916" height="941" alt="Screenshot 2025-12-04 131332" src="https://github.com/user-attachments/assets/0698f0f9-4492-40bf-9bb0-04756e565265" />
