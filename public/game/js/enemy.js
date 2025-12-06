@@ -1,13 +1,40 @@
-// Enemy statistics
-
+// Enemy state and spawn configuration
 let enemies = [];
-let enemySpawnTimer = 0; // frame-scaled timer (adds dt each frame)
-let enemySpawnRate = 60;   // frames (1 enemy/sec at 60fps)
-let enemyBaseSpeed = 0;
-// Global multiplier to scale enemy vertical speed. 1 = normal, 2 = 100% faster
-let enemySpeedMultiplier = 5; // set to 2 to make enemies move 100% faster
-// Global multiplier to scale enemy spawn frequency. 1 = normal, 2 = twice as many
-let enemySpawnMultiplier = 2; // set to 2 to make enemies spawn 100% more often
+let enemySpawnTimer = 0;
+let enemySpawnRate = 30; // frames between spawns
+let enemyBaseSpeed = 1.5; // minimum speed
+let enemySpeedMultiplier = 2; // speed scaling factor
+let enemySpawnMultiplier = 4; // spawn frequency multiplier
+
+// Sprite animation settings
+const ENEMY_SPRITE_COLS = 6;
+const ENEMY_ANIM_FPS = 8;
+const ENEMY_FRAME_DELAY = 60 / ENEMY_ANIM_FPS;
+const ENEMY_SCALE = 2.5; // visual size multiplier
+const MAX_ENEMIES = 50; // safety cap // safety cap
+
+// Sprite loading and animation state
+let enemyImg = new Image();
+enemyImg.src = "./assets/sprites/Slime2_Idle_with_shadow.png";
+enemyImg.onerror = (err) => console.error('Failed to load enemy sprite:', err, enemyImg.src);
+let enemySpriteReady = false;
+let enemyFrameW = 0;
+let enemyFrameH = 0;
+let enemyAnimFrame = 0;
+let enemyAnimTimer = 0;
+
+// Calculate frame dimensions when sprite loads
+enemyImg.onload = () => {
+  enemyFrameW = Math.floor(enemyImg.width / ENEMY_SPRITE_COLS);
+  enemyFrameH = Math.floor(enemyFrameW);
+  enemySpriteReady = true;
+  console.log('Enemy sprite loaded', { src: enemyImg.src, imgW: enemyImg.width, imgH: enemyImg.height, frameW: enemyFrameW, frameH: enemyFrameH });
+  const scale = ENEMY_SCALE;
+  enemies.forEach(e => {
+    e.width = enemyFrameW * scale;
+    e.height = enemyFrameH * scale;
+  });
+};
 
 function resetEnemies() {
   enemies = [];
@@ -15,16 +42,17 @@ function resetEnemies() {
 }
 
 function spawnEnemy(canvas) {
-  const size = 50;
+  const defaultSize = 50;
+  if (enemies.length >= MAX_ENEMIES) return;
+  const scale = ENEMY_SCALE;
+  const size = enemySpriteReady ? Math.max(24, Math.floor(enemyFrameW * scale)) : defaultSize;
   const x = randRange(0, canvas.width - size);
   const e = {
     x,
     y: -size,
     width: size,
     height: size,
-    // Calculate base speed and then scale by the global multiplier so we can
-    // easily change overall enemy velocity without changing individual code.
-    speed: (enemyBaseSpeed + level * 0.2) * enemySpeedMultiplier
+    speed: (enemyBaseSpeed + level * 0.1) * enemySpeedMultiplier
   }
   if(!checkSpawnCollision(e)){
       enemies.push(e);
@@ -32,27 +60,45 @@ function spawnEnemy(canvas) {
 }
 
 function updateEnemies(canvas, dt) {
-  // enemySpawnTimer is a frame-equivalent counter; dt ~1 at 60fps
-  // accumulate the frame-equivalent dt and spawn when it reaches enemySpawnRate
   enemySpawnTimer += dt;
 
-  // Adjust spawn threshold by multiplier so we can increase/decrease spawn
-  // frequency without changing the base rate.
-  const spawnThreshold = enemySpawnRate / Math.max(1, enemySpawnMultiplier);
+  // Scale spawn rate with level (15% increase per level)
+  const levelSpawnMultiplier = 1 + (level - 1) * 0.15;
+  const activeMultiplier = enemySpawnMultiplier * levelSpawnMultiplier;
+  const spawnThreshold = enemySpawnRate / Math.max(1, activeMultiplier);
   if (enemySpawnTimer >= spawnThreshold) {
     spawnEnemy(canvas);
     enemySpawnTimer = 0;
   }
 
+  // Move enemies downward
   enemies.forEach(e => {
-    // speed is expressed in pixels-per-60fps-frame; scale with dt
     e.y += e.speed * dt;
   });
+
+  // Update sprite animation frame
+  if (enemySpriteReady) {
+    enemyAnimTimer += dt;
+    if (enemyAnimTimer >= ENEMY_FRAME_DELAY) {
+      enemyAnimFrame = (enemyAnimFrame + 1) % ENEMY_SPRITE_COLS;
+      enemyAnimTimer -= ENEMY_FRAME_DELAY;
+    }
+  }
 }
 
 function drawEnemies(ctx) {
-  ctx.fillStyle = "red";
-  enemies.forEach(e => {
-    ctx.fillRect(e.x, e.y, e.width, e.height);
-  });
+  if (enemySpriteReady) {
+    enemies.forEach(e => {
+      const sx = enemyAnimFrame * enemyFrameW;
+      const sy = 0;
+      const sw = enemyFrameW;
+      const sh = enemyFrameH;
+      ctx.drawImage(enemyImg, sx, sy, sw, sh, e.x, e.y, e.width, e.height);
+    });
+  } else {
+    ctx.fillStyle = "red";
+    enemies.forEach(e => {
+      ctx.fillRect(e.x, e.y, e.width, e.height);
+    });
+  }
 }

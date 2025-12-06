@@ -33,7 +33,7 @@ function shoot() {
 
   if (doubleShot) {
     const centerX = player.x + player.width / 2;
-    const spread = player.width * 0.15; // Spread variable
+    const spread = player.width * 0.15;
     
     bullets.push({
       x: centerX - spread - bulletWidth / 2,
@@ -66,8 +66,31 @@ function updateBullets(dt) {
 }
 
 function drawBullets(ctx) {
-  ctx.fillStyle = "yellow";
   bullets.forEach(b => {
-    ctx.fillRect(b.x, b.y, b.width, b.height);
+    const centerX = b.x + b.width / 2;
+    const centerY = b.y + b.height / 2;
+    const radius = b.width / 2;
+    const gradient = ctx.createRadialGradient(
+      centerX, centerY, 0,
+      centerX, centerY, radius
+    );
+    gradient.addColorStop(0, 'rgba(255,250,150,1)');
+    gradient.addColorStop(0.4, 'rgba(255,220,0,0.95)');
+    gradient.addColorStop(1, 'rgba(255,220,0,0)');
+
+    ctx.save();
+    ctx.shadowBlur = 18;
+    ctx.shadowColor = 'rgba(255,230,100,0.9)';
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // bright white/yellow core for contrast for visibility
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, Math.max(2, radius / 3), 0, Math.PI * 2);
+    ctx.fill();
   });
 }

@@ -1,6 +1,6 @@
 // Write UI-elements: XP-bar, level up-menu, game over, text
 
-let hue = 0; // for level up menu color cycling
+let hue = 0;
 
 function drawXPBar(ctx, canvas) {
   const barHeight = 20;
@@ -18,7 +18,7 @@ function drawXPBar(ctx, canvas) {
 }
 
 function drawLevelUpMenu(ctx, canvas) {
-  const w = canvas.width - 400; //decrease to make width smaller
+  const w = canvas.width - 400;
   const h = 260;
   const x = canvas.width / 2 - w / 2;
   const y = canvas.height / 2 - h / 2;
@@ -36,7 +36,7 @@ function drawLevelUpMenu(ctx, canvas) {
 
   ctx.font = "20px Arial";
   currentChoices.forEach((p, i) => {
-    if (i === selectedIndex) ctx.fillStyle='hsl('+hue+', 100%, 50%)'; // rainbow color effect on the selected option
+    if (i === selectedIndex) ctx.fillStyle='hsl('+hue+', 100%, 50%)';
     else ctx.fillStyle = "white";
 
     ctx.fillText(p, x + 50, y + 90 + i * 40);
@@ -59,6 +59,12 @@ function drawStartScreen(ctx, canvas) {
   ctx.font = "24px Arial";
   ctx.fillText("Press CONFIRM/E to start", canvas.width / 2, canvas.height / 2 + 20);
   ctx.textAlign = "start";
+
+  // Controls hint
+  ctx.font = "16px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("Controls: A/D left/right, W/S up/down, E to confirm", canvas.width / 2, canvas.height / 2 + 60);
+  ctx.textAlign = "start";
 }
 
 function drawGameOver(ctx, canvas, score) {
@@ -73,6 +79,12 @@ function drawGameOver(ctx, canvas, score) {
   ctx.fillText(`Score: ${score}`, canvas.width / 2 - 60, canvas.height / 2 + 20);
   ctx.font = "18px Arial";
   ctx.fillText("Press CONFIRM/E to restart", canvas.width / 2 - 115, canvas.height / 2 + 60);
+
+  // Controls hint
+  ctx.font = "16px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("Controls: A/D left/right, W/S up/down, E to confirm", canvas.width / 2, canvas.height / 2 + 100);
+  ctx.textAlign = "start";
 }
 
 function drawHUD(ctx, score) {

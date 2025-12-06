@@ -11,7 +11,6 @@ let powerupPool = [
 let currentChoices = [];
 let selectedIndex = 0;
 
-// powerup states
 let doubleShot = false;
 let piercing = false;
 
@@ -32,18 +31,16 @@ function openLevelUpMenu() {
 }
 
 function handlePowerupSelection() {
-  // cycle option
   if (input.selectNext) {
-    selectedIndex = (selectedIndex + 1) % currentChoices.length; // wrap around and move downwards
+    selectedIndex = (selectedIndex + 1) % currentChoices.length;
     input.selectNext = false;
   }
 
   if (input.selectPrevious) {
-    selectedIndex = (selectedIndex - 1 + currentChoices.length) % currentChoices.length; // wrap around and move upwards
+    selectedIndex = (selectedIndex - 1 + currentChoices.length) % currentChoices.length;
     input.selectPrevious = false;
   }
 
-  // confirm choice
   if (input.confirm) {
     applyPowerup(currentChoices[selectedIndex]);
     input.confirm = false;
@@ -55,12 +52,10 @@ function applyPowerup(p) {
   switch (p) {
     case "Double Bullets":
       doubleShot = true;
-      //remove from powerup pool once chosen
       powerupPool = powerupPool.filter(p => p !== "Double Bullets")
       break;
     case "Piercing":
       piercing = true;
-      //remove from powerup pool once chosen
       powerupPool = powerupPool.filter(p => p !== "Piercing");
       break;
     case "Faster Firerate":

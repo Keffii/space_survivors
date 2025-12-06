@@ -3,12 +3,11 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-let gameState = "start"; // start, playing, levelup, gameover
+let gameState = "start";
 let score = 0;
 let bgImg = new Image();
 bgImg.src = "./assets/sprites/background.png";
 
-// Initialize
 initPlayer(canvas);
 resetEnemies();
 resetBullets();
@@ -18,12 +17,12 @@ resetPowerups();
 let lastTime = performance.now();
 
 function gameLoop(timestamp) {
-  const dt = (timestamp - lastTime) / 16.67; // ~1 on 60fps
+  const dt = (timestamp - lastTime) / 16.67;
   lastTime = timestamp;
 
   const clampedDt = Math.min(dt, 5);
 
-  hue = (hue + 3) % 360; // change the value before 360 to update the animation speed, update rainbow color
+  hue = (hue + 3) % 360;
 
   updateGame(clampedDt);
   drawGame();
@@ -32,7 +31,6 @@ function gameLoop(timestamp) {
 
 function updateGame(dt) {
   if (gameState === "start") {
-    // Wait for confirm to start
     if (input.confirm) {
       input.confirm = false;
       gameState = "playing";
@@ -51,7 +49,6 @@ function updateGame(dt) {
   } else if (gameState === "levelup") {
     handlePowerupSelection();
   } else if (gameState === "gameover") {
-    // Wait for confirm to restart
     if (input.confirm) {
       input.confirm = false;
       restartGame();
@@ -65,15 +62,13 @@ function handleBulletEnemyCollisions() {
     for (let ei = enemies.length - 1; ei >= 0; ei--) {
       const e = enemies[ei];
       if (rectsOverlap(b, e)) {
-        // remove enemy and add score/XP
         enemies.splice(ei, 1);
         score += 10;
-        addXP(10); //add 10 XP per enemy hit
+        addXP(10);
 
-        // remove bullet if not piercing
         if (!piercing) {
           bullets.splice(bi, 1);
-          break; // bullet is gone, stop checking other enemies
+          break;
         }
       }
     }
@@ -88,7 +83,6 @@ function handleEnemyBottomOrPlayerHit() {
   for (let i = 0; i < enemies.length; i++) {
     const e = enemies[i];
 
-    // if enemy reaches the bottom of the screen
     if (e.y + e.height >= canvas.height - 40) {
       gameOver();
       return;
@@ -100,7 +94,6 @@ function handleEnemyBottomOrPlayerHit() {
 function gameOver() {
   gameState = "gameover";
 
-  // Send Score to react component
   window.parent.postMessage({
     type: 'GAME_OVER',
     score: score,
@@ -121,18 +114,14 @@ function restartGame() {
 function drawGame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  //background image
   ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-  // player, enemies, bullets
   drawPlayer(ctx);
   drawEnemies(ctx);
   drawBullets(ctx);
 
-  // HUD & XP-bar
   drawHUD(ctx, score);
   drawXPBar(ctx, canvas);
 
-  // overlays
   if (gameState === "start") {
     drawStartScreen(ctx, canvas);
   } else if (gameState === "levelup") {
@@ -142,6 +131,5 @@ function drawGame() {
   }
 }
 
-// Start the loop
 requestAnimationFrame(gameLoop);
 
