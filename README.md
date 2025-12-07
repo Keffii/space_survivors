@@ -226,4 +226,5 @@ After deploying, add an inline policy to the Cognito <b>authenticated</b> role s
 
 <h2 align="center">Preview</h2>
 <ul>
-<img width="1916" height="941" alt="Screenshot 2025-12-04 131332" src="https://github.com/user-attachments/assets/0698f0f9-4492-40bf-9bb0-04756e565265" />
+
+![SpaceSurvivors](https://github.com/user-attachments/assets/ebeee657-e93a-40a6-9c45-fe618c20c4cf)
