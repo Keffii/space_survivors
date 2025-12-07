@@ -4,7 +4,8 @@ export const graphqlIoTCoreStatus = defineFunction({
 
   environment: {
     API_ENDPOINT: secret('CUSTOM_LAMBDA_GRAPHQL_ENDPOINT'), // this assumes you created a secret named "MY_API_KEY"
-    API_KEY: secret('CUSTOM_LAMBDA_GRAPHQL_KEY') // this assumes you created a secret named "MY_API_KEY"
+    API_KEY: secret('CUSTOM_LAMBDA_GRAPHQL_KEY'), // this assumes you created a secret named "MY_API_KEY"
+    DISCORD_WEBHOOK: secret('DISCORD_WEBHOOK')
   },
   // optionally specify a name for the Function (defaults to directory name)
   name: 'graphqlIoTCoreStatus',

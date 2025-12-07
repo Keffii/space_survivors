@@ -61,6 +61,44 @@ export const handler: Handler = async (event, context) => {
         };
     }
 
+    // Send Discord webhook notification
+    const webhookUrl = process.env.DISCORD_WEBHOOK;
+    if (webhookUrl && statusCode === 200) {
+        const username = event.username || event.clientId || event.device_id || 'Unknown';
+        const status = String(event.eventType || 'unknown').toLowerCase();
+        
+        let message = '';
+        if (status === 'connect' || status === 'connected') {
+            message = `Player ${username} connected`;
+        } else if (status === 'disconnect' || status === 'disconnected') {
+            message = `Player ${username} disconnected`;
+        } else {
+            message = `Player ${username} status: ${status}`;
+        }
+
+        const discordMessage = {
+            content: message
+        };
+
+        try {
+            const discordResponse = await fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(discordMessage)
+            });
+
+            if (discordResponse.status === 204) {
+                console.log('Discord webhook sent successfully');
+            } else if (discordResponse.status === 429) {
+                console.warn('Discord rate-limited');
+            } else {
+                const text = await discordResponse.text();
+                console.error('Discord webhook error status=%s body=%s', discordResponse.status, text);
+            }
+        } catch (discordError) {
+            console.error('Failed to send Discord webhook:', String(discordError));
+        }
+    }
 
     return {
         statusCode,
