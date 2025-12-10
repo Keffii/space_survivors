@@ -33,7 +33,7 @@ The architecture is divided into three logical groups:
 
 ## Preview
 
-![SpaceSurvivors](https://github.com/user-attachments/assets/ebeee657-e93a-40a6-9c45-fe618c20c4cf)
+![SpaceSurvivors](https://github.com/user-attachments/assets/1500ba11-9928-4c68-b19a-0658a983b906)
 
 ---
 
@@ -168,7 +168,7 @@ After deploying, add an inline policy to the Cognito **authenticated** role so t
 
 ![Grafana Dashboard](https://github.com/user-attachments/assets/f1e8266b-835e-486c-9bc8-48baa2c3d746)
 
-The Grafana dashboard provides comprehensive monitoring and analytics for SpaceSurvivors. It visualizes key metrics including AWS Lambda invocations, IoT Core message throughput, and system performance data from CloudWatch. The dashboard features a real-time leaderboard displaying the top 5 highscores, allowing you to track competitive performance at a glance. Additional panels show device connectivity status, button event frequencies, and historical trends to help optimize gameplay and identify system bottlenecks.
+The Grafana dashboard provides insight into the current leaderboard which is top 5 highscores.
 
 ---
 
@@ -176,8 +176,7 @@ The Grafana dashboard provides comprehensive monitoring and analytics for SpaceS
 
 ![Discord Events](https://github.com/user-attachments/assets/6ff2c7f8-ea7a-4be3-9b68-476163be764a)
 
-The Discord webhook integration provides real-time notifications for important game events directly to your Discord server. When triggered by AWS Lambda functions, the webhook sends formatted messages to announce achievements such as new highscores, player milestones, or system events. This allows community members to stay engaged with the game's activity and celebrate player accomplishments instantly. Configure your webhook URL in AWS Secrets Manager and set up Lambda triggers through IoT Rules or AppSync resolvers to customize which events generate notifications.
-
+The Discord webhook integration shows connected/disconnected status when a player connects their ESP32.
 ---
 
 ## Scalability
