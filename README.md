@@ -1,97 +1,102 @@
-  <h1 align="center">SpaceSurvivors</h1>
-  <p align="center">IoT-driven arcade game using AWS Amplify and ESP32</p>
-</div>
+# SpaceSurvivors
 
-<p align="left">
+**IoT-driven arcade game using AWS Amplify and ESP32**
+
 SpaceSurvivors is a browser-based arcade game controlled by a physical ESP32 device. Button events are sent via MQTT to AWS IoT Core and consumed in real time by the React frontend. Highscores are persisted through AWS AppSync (GraphQL) and DynamoDB, with optional Discord notifications via webhook and monitoring through Grafana and CloudWatch.
-</p>
 
 ---
 
-<h2 align="center">Architecture</h2>
+## Architecture
 
-<div align="center">
-<img width="691" height="802" alt="Project Architecture drawio(12)" src="https://github.com/user-attachments/assets/011b48a3-1bd5-4718-9159-0b2698a1b60e" />
-</div>
+![Project Architecture](https://github.com/user-attachments/assets/011b48a3-1bd5-4718-9159-0b2698a1b60e)
 
-<p align="left">
 The architecture is divided into three logical groups:
 
-<b>Devices & Webhook</b>
-<ul>
-  <li><b>ESP32</b> - Publishes button events over MQTT/TLS to AWS IoT Core.</li>
-  <li><b>AWS IoT Core</b> - MQTT broker that receives device messages and can route them via IoT Rules.</li>
-  <li><b>AWS Lambda</b> - Processes IoT events and can forward notifications to external services.</li>
-  <li><b>Discord Webhook</b> - Receives notifications (e.g., new highscores) from a Lambda function.</li>
-</ul>
+### Devices & Webhook
+- **ESP32** - Publishes button events over MQTT/TLS to AWS IoT Core.
+- **AWS IoT Core** - MQTT broker that receives device messages and can route them via IoT Rules.
+- **AWS Lambda** - Processes IoT events and can forward notifications to external services.
+- **Discord Webhook** - Receives notifications (e.g., new highscores) from a Lambda function.
 
-<b>Backend & Data</b>
-<ul>
-  <li><b>AWS AppSync (GraphQL)</b> - API layer for creating and querying highscores; supports real-time subscriptions.</li>
-  <li><b>Amazon DynamoDB</b> - Persistent storage for highscores, devices, and game data.</li>
-  <li><b>AWS Lambda</b> - Backend functions for data processing, external integrations, or scheduled tasks.</li>
-  <li><b>Amazon CloudWatch</b> - Logs and metrics from Lambda and other AWS services.</li>
-  <li><b>Grafana</b> - Dashboards for visualizing CloudWatch metrics or Timestream data.</li>
-</ul>
+### Backend & Data
+- **AWS AppSync (GraphQL)** - API layer for creating and querying highscores; supports real-time subscriptions.
+- **Amazon DynamoDB** - Persistent storage for highscores, devices, and game data.
+- **AWS Lambda** - Backend functions for data processing, external integrations, or scheduled tasks.
+- **Amazon CloudWatch** - Logs and metrics from Lambda and other AWS services.
+- **Grafana** - Dashboards for visualizing CloudWatch metrics or Timestream data.
 
-<b>Frontend & Auth</b>
-<ul>
-  <li><b>Amazon Cognito</b> - User authentication; provides temporary AWS credentials to the browser for IoT and AppSync access.</li>
-  <li><b>SpaceSurvivors (React + Amplify)</b> - The web application that hosts the game, receives IoT button events via WebSocket, and displays leaderboards.</li>
-</ul>
-</p>
+### Frontend & Auth
+- **Amazon Cognito** - User authentication; provides temporary AWS credentials to the browser for IoT and AppSync access.
+- **SpaceSurvivors (React + Amplify)** - The web application that hosts the game, receives IoT button events via WebSocket, and displays leaderboards.
 
 ---
 
-<h2 align="center">Hardware</h2>
+## Preview
 
-<ul>
-  <li>ESP32 development board</li>
-  <li>Push buttons (Left, Right, Confirm)</li>
-  <li>Jumper wires and breadboard</li>
-</ul>
+![SpaceSurvivors](https://github.com/user-attachments/assets/ebeee657-e93a-40a6-9c45-fe618c20c4cf)
 
 ---
 
-<h2 align="center">Software & Services</h2>
+## Play Online
 
-<ul>
-  <li><b>AWS</b>
-    <ul>
-      <li>IoT Core</li>
-      <li>Lambda</li>
-      <li>AppSync (GraphQL)</li>
-      <li>DynamoDB</li>
-      <li>Cognito</li>
-      <li>CloudWatch</li>
-    </ul>
-  </li>
-  <li><b>Amplify</b> - Frontend hosting, backend provisioning, CI/CD</li>
-  <li><b>Grafana</b> - Metrics visualization</li>
-  <li><b>Discord</b> - Webhook notifications</li>
-  <li><b>React + Vite</b> - Frontend framework</li>
-  <li><b>Arduino / PlatformIO</b> - ESP32 firmware development</li>
-</ul>
+**[Play SpaceSurvivors](https://main.d23tyi60vwuclv.amplifyapp.com/)**
+
+- To create an account, use a temporary email from [10MinuteMail](https://10minutemail.com/) for quick registration without sharing your personal email.
+- Once registered, you can view the leaderboard, track highscores, and experience the real-time gameplay (note: click on the game and use your keyboard, WASD+E for controls.)
 
 ---
 
-<h2 align="center">Setup ESP32</h2>
+## Hardware
 
-<p align="left">
-1. Create an IoT Thing in <b>AWS IoT Core -> All devices -> Things -> Create thing</b>.<br>
-2. Auto-generate a certificate and attach a policy with permissions for <code>iot:Connect</code>, <code>iot:Publish</code>, <code>iot:Subscribe</code>, and <code>iot:Receive</code> scoped to your device and topic.<br>
-3. Download the certificate bundle (device cert, private key, Amazon Root CA).<br>
+- ESP32 development board
+- Push buttons (Left, Right, Confirm)
+- Jumper wires and breadboard
+
+---
+
+## Software & Services
+
+- **AWS**
+  - IoT Core
+  - Lambda
+  - AppSync (GraphQL)
+  - DynamoDB
+  - Cognito
+  - CloudWatch
+- **Amplify** - Frontend hosting, backend provisioning, CI/CD
+- **Grafana** - Metrics visualization
+- **Discord** - Webhook notifications
+- **React + Vite** - Frontend framework
+- **Arduino / PlatformIO** - ESP32 firmware development
+
+---
+
+## Graphics
+
+SpaceSurvivors uses HTML Canvas for rendering all game graphics, providing smooth 2D animations and pixel-perfect collision detection. The game features retro pixel art assets that create a nostalgic arcade atmosphere:
+
+- **Player Model** - Spaceship sprite sheets. Assets from [CraftPix Free Spaceship Pixel Art](https://craftpix.net/freebies/free-spaceship-pixel-art-sprite-sheets/?num=1&count=25&sq=spaceship&pos=3)
+- **Enemy Models** - Animated slime mobs in various colors with attack and movement animations. Assets from [CraftPix Free Slime Mobs Pack](https://craftpix.net/freebies/free-slime-mobs-pixel-art-top-down-sprite-pack/)
+- **Background** - Sky with clouds. Assets from [CraftPix Free Sky Background Set](https://craftpix.net/freebies/free-sky-with-clouds-background-pixel-art-set/)
+
+The Canvas API enables efficient sprite rendering, frame-by-frame animation, and real-time game state updates synchronized with the physical controller input from the ESP32 device.
+
+---
+
+## Setup ESP32
+
+1. Create an IoT Thing in **AWS IoT Core → All devices → Things → Create thing**.
+2. Auto-generate a certificate and attach a policy with permissions for `iot:Connect`, `iot:Publish`, `iot:Subscribe`, and `iot:Receive` scoped to your device and topic.
+3. Download the certificate bundle (device cert, private key, Amazon Root CA).
 4. Flash the ESP32 with firmware that:
-   <ul>
-     <li>Connects to WiFi</li>
-     <li>Establishes an MQTT/TLS connection to your IoT Core endpoint</li>
-     <li>Publishes button events as JSON to <code>deviceId/events/button</code></li>
-   </ul>
-5. Verify messages arrive using the <b>MQTT test client</b> in the AWS Console.
-</p>
+   - Connects to WiFi
+   - Establishes an MQTT/TLS connection to your IoT Core endpoint
+   - Publishes button events as JSON to `deviceId/events/button`
+5. Verify messages arrive using the **MQTT test client** in the AWS Console.
 
-<b>Example IoT policy (JSON):</b>
-<pre>
+### Example IoT policy (JSON):
+
+```json
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -117,91 +122,67 @@ The architecture is divided into three logical groups:
     }
   ]
 }
-</pre>
+```
 
 ---
 
-<h2 align="center">Setup AWS (Amplify)</h2>
+## Setup AWS (Amplify)
 
-<h3>Prerequisites</h3>
-<ul>
-  <li>Node.js and npm installed</li>
-  <li>AWS account with Amplify access</li>
-</ul>
+### Prerequisites
+- Node.js and npm installed
+- AWS account with Amplify access
 
-<h3>Local development</h3>
-<pre>
-npm ci
+### Local development
+```bash
+npm install
 npm run dev
-</pre>
+```
 
-<h3>Deploy backend</h3>
-<p>
-The Amplify backend is defined in <code>amplify/</code>. Use the Amplify CLI or Amplify Console to deploy:
-</p>
-<pre>
-npx ampx sandbox   # local sandbox
-npx ampx deploy    # deploy to cloud
-</pre>
+### Deploy backend
+The Amplify backend is defined in `amplify/`. Use the Amplify CLI or Amplify Console to deploy:
 
-<h3>Add IoT permissions to Cognito role</h3>
-<p>
-After deploying, add an inline policy to the Cognito <b>authenticated</b> role so the browser can subscribe to IoT topics. See <code>IAM_SETUP.md</code> for the full policy JSON.
-</p>
+### Add IoT permissions to Cognito role
+After deploying, add an inline policy to the Cognito **authenticated** role so the browser can subscribe to IoT topics. See `IAM_SETUP.md` for the full policy JSON.
 
 ---
 
+## Security
 
-<h2 align="center">Security</h2>
-
-<ul>
-  <li><b>Transport encryption</b> - MQTT/TLS (device) and WSS (browser).</li>
-  <li><b>Device authentication</b> - X.509 certificates registered in AWS IoT.</li>
-  <li><b>User authentication</b> - Cognito User Pool; temporary credentials for IoT and AppSync.</li>
-  <li><b>Least-privilege</b> - Narrow IAM policies scoped to specific topics and resources.</li>
-  <li><b>Secrets management</b> - Use AWS Secrets Manager for API keys and webhook URLs.</li>
-</ul>
+- **Transport encryption** - MQTT/TLS (device) and WSS (browser).
+- **Device authentication** - X.509 certificates registered in AWS IoT.
+- **User authentication** - Cognito User Pool; temporary credentials for IoT and AppSync.
+- **Least-privilege** - Narrow IAM policies scoped to specific topics and resources.
+- **Secrets management** - Use AWS Secrets Manager for API keys and webhook URLs.
 
 ---
 
-<h2 align="center">Visualization</h2>
+## Visualization
 
-<ul>
-  <li><b>React frontend</b> - Real-time leaderboard using AppSync subscriptions.</li>
-  <li><b>Grafana</b> - Dashboards connected to CloudWatch or Timestream for device/Lambda metrics.</li>
-  <li><b>Discord</b> - Instant notifications for events like new highscores.</li>
-</ul>
+- **React frontend** - Real-time leaderboard using AppSync subscriptions.
+- **Grafana** - Dashboards connected to CloudWatch or Timestream for device/Lambda metrics.
+- **Discord** - Instant notifications for events like new highscores.
 
 ---
 
-<h2 align="center">Scalability</h2>
+## Grafana
 
-<ul>
-  <li><b>Support for multiple devices</b> In realtime track connected IoTCore devices and choose your device from the dropdown list</li>
-  <li><b>Renew cognito tokens yearly</b> At the moment cognito tokens doesn't have a expire date. Make cognito tokens only alive for 365 days and ask for the user to renew their token yearly</li>
-  <li><b>Expand gameanalytics</b> Track how long each user is playing per session, their events(buttonevents)</li>
-  <li><b>Threshold message for when near token cap</b> Add a threshold message rule for when the project expands and need more tokens than provided by the free plan</li>
-</ul>
+![Grafana Dashboard](https://github.com/user-attachments/assets/f1e8266b-835e-486c-9bc8-48baa2c3d746)
+
+The Grafana dashboard provides comprehensive monitoring and analytics for SpaceSurvivors. It visualizes key metrics including AWS Lambda invocations, IoT Core message throughput, and system performance data from CloudWatch. The dashboard features a real-time leaderboard displaying the top 5 highscores, allowing you to track competitive performance at a glance. Additional panels show device connectivity status, button event frequencies, and historical trends to help optimize gameplay and identify system bottlenecks.
 
 ---
 
-<h2 align="center">Grafana</h2>
+## Discord Webhook
 
-<ul>
-<img width="1882" height="881" alt="Screenshot 2025-12-04 130822" src="https://github.com/user-attachments/assets/f1e8266b-835e-486c-9bc8-48baa2c3d746" />
-</ul>
+![Discord Events](https://github.com/user-attachments/assets/6ff2c7f8-ea7a-4be3-9b68-476163be764a)
 
----
-
-<h2 align="center">Preview</h2>
-<ul>
-
-![SpaceSurvivors](https://github.com/user-attachments/assets/ebeee657-e93a-40a6-9c45-fe618c20c4cf)
+The Discord webhook integration provides real-time notifications for important game events directly to your Discord server. When triggered by AWS Lambda functions, the webhook sends formatted messages to announce achievements such as new highscores, player milestones, or system events. This allows community members to stay engaged with the game's activity and celebrate player accomplishments instantly. Configure your webhook URL in AWS Secrets Manager and set up Lambda triggers through IoT Rules or AppSync resolvers to customize which events generate notifications.
 
 ---
 
-<h2 align="center">Discord Webhook/h2>
-<ul>
-<img width="312" height="261" alt="Discord_events" src="https://github.com/user-attachments/assets/6ff2c7f8-ea7a-4be3-9b68-476163be764a" />
+## Scalability
 
-
+- **Support for multiple devices** - In realtime track connected IoTCore devices and choose your device from the dropdown list
+- **Renew cognito tokens yearly** - At the moment cognito tokens doesn't have a expire date. Make cognito tokens only alive for 365 days and ask for the user to renew their token yearly
+- **Expand gameanalytics** - Track how long each user is playing per session, their events (button events)
+- **Threshold message for when near token cap** - Add a threshold message rule for when the project expands and need more tokens than provided by the free plan
