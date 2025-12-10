@@ -61,8 +61,11 @@ function handleBulletEnemyCollisions() {
     const b = bullets[bi];
     for (let ei = enemies.length - 1; ei >= 0; ei--) {
       const e = enemies[ei];
-      if (rectsOverlap(b, e)) {
-        enemies.splice(ei, 1);
+      if (!e.dying && rectsOverlapTight(b, e, 20)) {
+        // Start death animation instead of removing immediately
+        e.dying = true;
+        e.deathFrame = 0;
+        e.deathTimer = 0;
         score += 10;
         addXP(10);
 
