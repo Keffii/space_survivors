@@ -2,12 +2,9 @@
 
 **IoT-driven arcade game using AWS Amplify and ESP32**
 
-SpaceSurvivors is a browser-based arcade game controlled by a physical ESP32 device. Button events are sent via MQTT to AWS IoT Core and consumed in real time by the React frontend. Highscores are persisted through AWS AppSync (GraphQL) and DynamoDB, with optional Discord notifications via webhook and monitoring through Grafana and CloudWatch.
-
----
-## Preview
-
 ![SpaceSurvivors](https://github.com/user-attachments/assets/1500ba11-9928-4c68-b19a-0658a983b906)
+
+SpaceSurvivors is a browser-based arcade game controlled by a physical ESP32 device. Button events are sent via MQTT to AWS IoT Core and consumed in real time by the React frontend. Highscores are persisted through AWS AppSync (GraphQL) and DynamoDB, with optional Discord notifications via webhook and monitoring through Grafana and CloudWatch.
 
 ---
 
