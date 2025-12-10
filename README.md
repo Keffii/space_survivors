@@ -5,7 +5,20 @@
 SpaceSurvivors is a browser-based arcade game controlled by a physical ESP32 device. Button events are sent via MQTT to AWS IoT Core and consumed in real time by the React frontend. Highscores are persisted through AWS AppSync (GraphQL) and DynamoDB, with optional Discord notifications via webhook and monitoring through Grafana and CloudWatch.
 
 ---
+## Preview
 
+![SpaceSurvivors](https://github.com/user-attachments/assets/1500ba11-9928-4c68-b19a-0658a983b906)
+
+---
+
+## Play Online
+
+**[Play SpaceSurvivors](https://main.d23tyi60vwuclv.amplifyapp.com/)**
+
+- To create an account, use a temporary email from [10MinuteMail](https://10minutemail.com/) for quick registration without sharing your personal email.
+- Once registered, you can view the leaderboard, track highscores, and experience the real-time gameplay (note: click on the game and use your keyboard, WASD+E for controls.)
+
+---
 ## Architecture
 
 ![Project Architecture](https://github.com/user-attachments/assets/011b48a3-1bd5-4718-9159-0b2698a1b60e)
@@ -28,21 +41,6 @@ The architecture is divided into three logical groups:
 ### Frontend & Auth
 - **Amazon Cognito** - User authentication; provides temporary AWS credentials to the browser for IoT and AppSync access.
 - **SpaceSurvivors (React + Amplify)** - The web application that hosts the game, receives IoT button events via WebSocket, and displays leaderboards.
-
----
-
-## Preview
-
-![SpaceSurvivors](https://github.com/user-attachments/assets/1500ba11-9928-4c68-b19a-0658a983b906)
-
----
-
-## Play Online
-
-**[Play SpaceSurvivors](https://main.d23tyi60vwuclv.amplifyapp.com/)**
-
-- To create an account, use a temporary email from [10MinuteMail](https://10minutemail.com/) for quick registration without sharing your personal email.
-- Once registered, you can view the leaderboard, track highscores, and experience the real-time gameplay (note: click on the game and use your keyboard, WASD+E for controls.)
 
 ---
 
