@@ -1,1 +1,357 @@
+// ESP32 Button Controller for AWS IoT Space Invaders
 
+// Optimized for ultra-low latency and no double inputs
+
+// Three buttons: LEFT (GPIO 26), RIGHT (GPIO 27), CONFIRM (GPIO 25)
+
+  
+
+#include "secrets.h"
+
+#include <WiFiClientSecure.h>
+
+#include <MQTTClient.h>
+
+#include <ArduinoJson.h>
+
+#include "WiFi.h"
+
+  
+
+// GPIO pins for three buttons
+
+#define BTN_LEFT 26
+
+#define BTN_RIGHT 25
+
+#define BTN_CONFIRM 27
+
+#define DEBOUNCE_MS 20        // Reduced to 20ms for faster response
+
+#define HELD_REPEAT_MS 100    // Resend held state every 100ms for smooth movement
+
+  
+
+// The MQTT topic for button events
+
+#define AWS_IOT_BUTTON_TOPIC "/events/button"
+
+  
+
+String THINGNAME = "";
+
+  
+
+// Initialize secure WiFi client and MQTT client
+
+WiFiClientSecure net = WiFiClientSecure();
+
+MQTTClient client = MQTTClient(1024);
+
+  
+
+// Button state tracking with improved debounce logic
+
+struct ButtonState {
+
+  uint8_t pin;
+
+  const char* name;
+
+  volatile bool currentState;      // Current physical state (true = pressed)
+
+  volatile bool lastStableState;   // Last debounced state
+
+  volatile uint32_t lastChangeTime;
+
+  volatile uint32_t lastPublishTime;
+
+  volatile bool stateChanged;      // Flag for ISR to signal change
+
+};
+
+  
+
+ButtonState buttons[3] = {
+
+  {BTN_LEFT, "LEFT", false, false, 0, 0, false},
+
+  {BTN_RIGHT, "RIGHT", false, false, 0, 0, false},
+
+  {BTN_CONFIRM, "CONFIRM", false, false, 0, 0, false}
+
+};
+
+  
+
+// ISR handlers - minimal processing, just flag changes
+
+void IRAM_ATTR leftISR() {
+
+  buttons[0].currentState = (digitalRead(BTN_LEFT) == LOW);
+
+  buttons[0].stateChanged = true;
+
+}
+
+  
+
+void IRAM_ATTR rightISR() {
+
+  buttons[1].currentState = (digitalRead(BTN_RIGHT) == LOW);
+
+  buttons[1].stateChanged = true;
+
+}
+
+  
+
+void IRAM_ATTR confirmISR() {
+
+  buttons[2].currentState = (digitalRead(BTN_CONFIRM) == LOW);
+
+  buttons[2].stateChanged = true;
+
+}
+
+  
+
+// Establishes connection to AWS IoT Core via WiFi and MQTT
+
+void connectAWS() {
+
+  WiFi.mode(WIFI_STA);
+
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  
+
+  // Get the MAC address to use as unique device identifier
+
+  THINGNAME = WiFi.macAddress();
+
+  THINGNAME.replace(":", "");
+
+  
+
+  Serial.println();
+
+  Serial.print("MAC Address (Thing Name): ");
+
+  Serial.println(THINGNAME);
+
+  Serial.println("Connecting to Wi-Fi");
+
+  
+
+  while (WiFi.status() != WL_CONNECTED) {
+
+    delay(500);
+
+    Serial.print(".");
+
+  }
+
+  
+
+  Serial.println("\nWiFi connected");
+
+  
+
+  // Configure WiFiClientSecure to use the AWS IoT device credentials
+
+  net.setCACert(AWS_CERT_CA);
+
+  net.setCertificate(AWS_CERT_CRT);
+
+  net.setPrivateKey(AWS_CERT_PRIVATE);
+
+  
+
+  // Connect to the MQTT broker on the AWS endpoint
+
+  client.begin(AWS_IOT_ENDPOINT, 8883, net);
+
+  
+
+  Serial.print("Connecting to AWS IoT");
+
+  
+
+  while (!client.connect(THINGNAME.c_str())) {
+
+    Serial.print(".");
+
+    delay(100);
+
+  }
+
+  
+
+  if (!client.connected()) {
+
+    Serial.println("AWS IoT Timeout!");
+
+    return;
+
+  }
+
+  
+
+  Serial.println("\nAWS IoT Connected!");
+
+}
+
+  
+
+// Publishes button event to AWS IoT Core (QoS 0 for lowest latency)
+
+bool publishButtonEvent(const char* buttonName, const char* action) {
+
+  StaticJsonDocument<128> doc;
+
+  doc["btn"] = buttonName;
+
+  doc["action"] = action;
+
+  doc["ts"] = millis();
+
+  String payload;
+
+  serializeJson(doc, payload);
+
+  return client.publish(THINGNAME + AWS_IOT_BUTTON_TOPIC, payload, false, 0);
+
+}
+
+  
+
+void setup() {
+
+  Serial.begin(115200);
+
+  delay(1000);
+
+  
+
+  // Configure button pins with internal pull-up resistors (buttons connect to GND)
+
+  pinMode(BTN_LEFT, INPUT_PULLUP);
+
+  pinMode(BTN_RIGHT, INPUT_PULLUP);
+
+  pinMode(BTN_CONFIRM, INPUT_PULLUP);
+
+  
+
+  // Initialize current states
+
+  buttons[0].currentState = (digitalRead(BTN_LEFT) == LOW);
+
+  buttons[1].currentState = (digitalRead(BTN_RIGHT) == LOW);
+
+  buttons[2].currentState = (digitalRead(BTN_CONFIRM) == LOW);
+
+  
+
+  // Attach interrupts on CHANGE (triggers on both press and release)
+
+  attachInterrupt(digitalPinToInterrupt(BTN_LEFT), leftISR, CHANGE);
+
+  attachInterrupt(digitalPinToInterrupt(BTN_RIGHT), rightISR, CHANGE);
+
+  attachInterrupt(digitalPinToInterrupt(BTN_CONFIRM), confirmISR, CHANGE);
+
+  
+
+  // Connect to AWS IoT Core
+
+  connectAWS();
+
+  
+
+  Serial.println("Ready for button input (LEFT/RIGHT/CONFIRM on GPIO 26/25/27)");
+
+}
+
+  
+
+void loop() {
+
+  uint32_t now = millis();
+
+  // Process button events with improved debounce logic
+
+  for (int i = 0; i < 3; i++) {
+
+    ButtonState &btn = buttons[i];
+
+    // Check if ISR flagged a state change
+
+    if (btn.stateChanged) {
+
+      noInterrupts();
+
+      bool currentState = btn.currentState;
+
+      btn.stateChanged = false;
+
+      interrupts();
+
+      // Debounce: only process if state has been stable for DEBOUNCE_MS
+
+      if (now - btn.lastChangeTime >= DEBOUNCE_MS) {
+
+        // State change is valid
+
+        if (currentState != btn.lastStableState) {
+
+          btn.lastStableState = currentState;
+
+          btn.lastChangeTime = now;
+
+          btn.lastPublishTime = now;
+
+          const char* action = currentState ? "press" : "release";
+
+          if (client.connected()) {
+
+            publishButtonEvent(btn.name, action);
+
+          }
+
+        }
+
+      } else {
+
+        // Still bouncing, record time but don't publish
+
+        btn.lastChangeTime = now;
+
+      }
+
+    }
+
+    // Send held state updates for continuous movement
+
+    if (btn.lastStableState && (now - btn.lastPublishTime >= HELD_REPEAT_MS)) {
+
+      btn.lastPublishTime = now;
+
+      if (client.connected()) {
+
+        publishButtonEvent(btn.name, "held");
+
+      }
+
+    }
+
+  }
+
+  
+
+  // Process incoming MQTT messages and maintain connection
+
+  client.loop();
+
+}
