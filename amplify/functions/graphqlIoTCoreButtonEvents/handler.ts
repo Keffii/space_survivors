@@ -10,7 +10,6 @@ const AMPLIFY_SSM_ENV_CONFIG = process.env.AMPLIFY_SSM_ENV_CONFIG as string;
 export const handler: Handler = async (event, context) => {
     console.log(`EVENT: ${JSON.stringify(event)}`);
     console.log(`GRAPHQL_ENDPOINT: ${GRAPHQL_ENDPOINT}`);
-    console.log(`GRAPHQL_API_KEY: ${GRAPHQL_API_KEY}`);
     console.log(`AMPLIFY_SSM_ENV_CONFIG: ${AMPLIFY_SSM_ENV_CONFIG}`);
 
     // Extract device_id from topic (e.g., "ECE334663DD4/events/button" -> "ECE334663DD4")

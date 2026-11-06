@@ -1,14 +1,15 @@
 import { defineFunction, secret } from '@aws-amplify/backend';
 
+// Triggered by the IoT lifecycle (connect/disconnect) rule defined in
+// amplify/backend.ts. API_ENDPOINT / API_KEY are injected in amplify/backend.ts
+// from the deployed AppSync API.
 export const graphqlIoTCoreStatus = defineFunction({
-
-  environment: {
-    API_ENDPOINT: secret('CUSTOM_LAMBDA_GRAPHQL_ENDPOINT'), // this assumes you created a secret named "MY_API_KEY"
-    API_KEY: secret('CUSTOM_LAMBDA_GRAPHQL_KEY'), // this assumes you created a secret named "MY_API_KEY"
-    DISCORD_WEBHOOK: secret('DISCORD_WEBHOOK')
-  },
-  // optionally specify a name for the Function (defaults to directory name)
   name: 'graphqlIoTCoreStatus',
-  // optionally specify a path to your handler (defaults to "./handler.ts")
-  entry: './handler.ts'
+  entry: './handler.ts',
+  resourceGroupName: 'data',
+  environment: {
+    // Set this secret in the Amplify console (Hosting → Secrets) or with
+    // `npx ampx sandbox secret set DISCORD_WEBHOOK` for a sandbox.
+    DISCORD_WEBHOOK: secret('DISCORD_WEBHOOK'),
+  },
 });

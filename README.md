@@ -134,10 +134,11 @@ npm run dev
 ```
 
 ### Deploy backend
-The Amplify backend is defined in `amplify/`. Use the Amplify CLI or Amplify Console to deploy:
+The Amplify Gen 2 backend is defined in `amplify/`. Connect the repository in the Amplify Console; `amplify.yml` deploys the backend and frontend on every push.
 
-### Add IoT permissions to Cognito role
-After deploying, add an inline policy to the Cognito **authenticated** role so the browser can subscribe to IoT topics. See `IAM_SETUP.md` for the full policy JSON.
+Besides Cognito, AppSync and DynamoDB, the backend also provisions the IoT Core rules, the IoT/IAM permissions for signed-in browsers, and looks up the account's IoT endpoint, so no manual IAM setup is needed.
+
+**Setting up a new AWS account?** Follow [`AWS_SETUP.md`](AWS_SETUP.md).
 
 ---
 

@@ -6,6 +6,30 @@ import {
 } from '@aws-amplify/pubsub';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
+import { IoTClient, AttachPolicyCommand } from '@aws-sdk/client-iot';
+import type { AwsCredentialIdentity } from '@aws-sdk/types';
+import outputs from '../../amplify_outputs.json';
+
+// Written by the backend deployment (see amplify/backend.ts → addOutput).
+type AmplifyOutputs = {
+  auth?: { aws_region?: string };
+  custom?: { iotRegion?: string; iotEndpoint?: string; iotBrowserPolicyName?: string };
+};
+const amplifyOutputs = outputs as AmplifyOutputs;
+const IOT_REGION = amplifyOutputs.custom?.iotRegion ?? amplifyOutputs.auth?.aws_region;
+const IOT_ENDPOINT = amplifyOutputs.custom?.iotEndpoint;
+const IOT_POLICY_NAME = amplifyOutputs.custom?.iotBrowserPolicyName;
+
+// Authenticated Cognito identities need an IoT policy attached to the identity
+// (in addition to the IAM role policy). AttachPolicy is idempotent, so we just
+// do it once per identity per page load.
+const attachedIdentities = new Set<string>();
+async function ensureIoTPolicyAttached(identityId: string, credentials: AwsCredentialIdentity) {
+  if (!IOT_POLICY_NAME || attachedIdentities.has(identityId)) return;
+  const iot = new IoTClient({ region: IOT_REGION, credentials });
+  await iot.send(new AttachPolicyCommand({ policyName: IOT_POLICY_NAME, target: identityId }));
+  attachedIdentities.add(identityId);
+}
 
 interface ButtonEvent {
   btn: 'LEFT' | 'RIGHT' | 'CONFIRM';
@@ -77,12 +101,24 @@ export const useIoTButtonInput = (
           authenticated: !!session.credentials
         });
 
+        if (!IOT_ENDPOINT) {
+          throw new Error('IoT endpoint missing from amplify_outputs.json – redeploy the backend.');
+        }
+
+        if (session.identityId && session.credentials) {
+          try {
+            await ensureIoTPolicyAttached(session.identityId, session.credentials);
+          } catch (attachError) {
+            console.warn('[IoT] Could not attach IoT policy to identity:', attachError);
+          }
+        }
+
         const clientIdBase = session.identityId?.split(':')[1] || 'anon';
         const clientId = `web-${clientIdBase}-${Math.random().toString(36).slice(-6)}`;
 
         pubsub = new PubSub({
-          region: 'eu-central-1',
-          endpoint: 'wss://a1v0zs4dzvjg7n-ats.iot.eu-central-1.amazonaws.com/mqtt',
+          region: IOT_REGION,
+          endpoint: `wss://${IOT_ENDPOINT}/mqtt`,
           clientId
         });
 

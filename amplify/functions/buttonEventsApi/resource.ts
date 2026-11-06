@@ -1,11 +1,11 @@
-import { defineFunction, secret } from '@aws-amplify/backend';
+import { defineFunction } from '@aws-amplify/backend';
 
+// API_ENDPOINT / API_KEY are injected in amplify/backend.ts from the deployed
+// AppSync API. The function lives in the "data" stack to avoid a circular
+// dependency between the data and function stacks.
 export const buttonEventsApi = defineFunction({
   name: 'buttonEventsApi',
   entry: './handler.ts',
-  environment: {
-    API_ENDPOINT: secret('CUSTOM_LAMBDA_GRAPHQL_ENDPOINT'),
-    API_KEY: secret('CUSTOM_LAMBDA_GRAPHQL_KEY')
-  },
-  timeoutSeconds: 30
+  timeoutSeconds: 30,
+  resourceGroupName: 'data',
 });
