@@ -14,10 +14,13 @@ const backend = defineBackend({
 // ---------------------------------------------------------------------------
 // Cognito: sign in with a username OR the verified email (email is an alias
 // instead of the username), case-insensitive usernames, Lite tier (free up to
-// 10,000 monthly users). Changing UsernameAttributes/AliasAttributes makes
-// CloudFormation replace the user pool, which deletes existing users.
+// 10,000 monthly users). Cognito can't change UsernameAttributes/AliasAttributes
+// on an existing pool, so the pool gets a new logical ID: CloudFormation creates
+// a new pool, repoints the client, identity pool and API, then deletes the old
+// one (and its users). Keep this ID from now on.
 // ---------------------------------------------------------------------------
 const { cfnUserPool } = backend.auth.resources.cfnResources;
+cfnUserPool.overrideLogicalId('amplifyAuthUserPoolUsernameAlias');
 cfnUserPool.addPropertyDeletionOverride('UsernameAttributes');
 cfnUserPool.aliasAttributes = ['email'];
 cfnUserPool.usernameConfiguration = { caseSensitive: false };
