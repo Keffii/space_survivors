@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Card, Heading, Text, Flex, Button, Badge, SelectField } from '@aws-amplify/ui-react';
+import React, { useState, useEffect } from 'react';
+import { View, Card, Heading, Text, Flex, Button } from '@aws-amplify/ui-react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource';
-import { useIoTButtonInput } from './hooks/useIoTButtonInput';
 
 // Create a typed client instance to interact with the Amplify Data (GraphQL API)
 const client = generateClient<Schema>();
@@ -12,13 +11,6 @@ const client = generateClient<Schema>();
  */
 const SpaceInvadersGame: React.FC<{ username?: string; signOut?: () => void }> = ({ username, signOut }) => {
   const [highScores, setHighScores] = useState<Array<Schema["HighScore"]["type"]>>([]);
-  const [devices, setDevices] = useState<Array<Schema["Device"]["type"]>>([]);
-  const [esp32DeviceId, setEsp32DeviceId] = useState('ECE334663DD4');
-  const [iotEnabled, setIotEnabled] = useState(false);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-
-  // ESP32 button input hook
-  useIoTButtonInput(esp32DeviceId, iframeRef, iotEnabled);
 
   const saveHighScore = async (username: string, score: number) => {
     await client.models.HighScore.create({
@@ -51,40 +43,6 @@ useEffect(() => {
   };
 }, [username]);
 
-useEffect(() => {
-  const deviceSubscription = client.models.Device.observeQuery().subscribe({
-    next: (data) => {
-      setDevices([...data.items]);
-    },
-  });
-
-  return () => {
-    deviceSubscription.unsubscribe();
-  };
-}, []);
-
-  const handleConnectESP32 = () => {
-    console.log('[ESP32] Connecting...');
-    setIotEnabled(true);
-  };
-
-  const handleDisconnectESP32 = () => {
-    console.log('[ESP32] Disconnecting...');
-    
-    // Release all button states in the game
-    if (iframeRef.current?.contentWindow) {
-      ['LEFT', 'RIGHT', 'CONFIRM'].forEach(btn => {
-        iframeRef.current!.contentWindow!.postMessage({
-          type: 'ESP32_BUTTON',
-          btn: btn,
-          action: 'release'
-        }, '*');
-      });
-    }
-    
-    setIotEnabled(false);
-  };
-
   // Compute global leaderboard: one entry per user (their best score), top 5
   const leaderboard = React.useMemo(() => {
     const bestByUser = highScores.reduce((acc, entry) => {
@@ -104,7 +62,7 @@ useEffect(() => {
   return (
     <View>
       <Flex direction="row" gap="1rem" wrap="nowrap" justifyContent="space-between" alignItems="flex-start">
-        {/* Left Column: ESP32 Controller + Leaderboard (stacked) */}
+        {/* Left Column: Account + Leaderboard (stacked) */}
         <Flex direction="column" gap="1rem" style={{ width: '400px', alignItems: 'stretch' }}>
           <Card
             className="themed-card"
@@ -119,49 +77,9 @@ useEffect(() => {
               WebkitBackdropFilter: 'blur(6px) saturate(120%)'
             }}
           >
-            <Heading level={4}>ESP32 Controller</Heading>
-            <SelectField
-              label="Device ID"
-              value={esp32DeviceId}
-              onChange={(e) => setEsp32DeviceId(e.target.value)}
-              disabled={iotEnabled}
-            >
-              {devices.length > 0 ? (
-                devices.map((device) => (
-                  <option key={device.device_id} value={device.device_id}>
-                    {device.device_id}
-                  </option>
-                ))
-              ) : (
-                <option value="ECE334663DD4">ECE334663DD4</option>
-              )}
-            </SelectField>
-
-            {(() => {
-              const device = devices.find(d => d.device_id === esp32DeviceId);
-              const isDeviceConnected = device?.status === "connected";
-
-              return !iotEnabled ? (
-                <Button onClick={handleConnectESP32} variation="primary" width="100%">
-                  Connect
-                </Button>
-              ) : (
-                <>
-                  <Flex direction="row" gap="0.5rem" alignItems="center">
-                    <Text fontSize="0.9rem">Status:</Text>
-                    <Badge variation={isDeviceConnected ? "success" : "error"}>
-                      {isDeviceConnected ? "Connected" : "Disconnected"}
-                    </Badge>
-                  </Flex>
-                  <Button onClick={handleDisconnectESP32} variation="warning" width="100%">
-                    Disconnect
-                  </Button>
-                </>
-              );
-            })()}
-
-            <Text fontSize="0.8rem" color="gray">
-              Topic: {esp32DeviceId}/events/button
+            <Heading level={4}>Player</Heading>
+            <Text fontSize="0.9rem" marginBottom="0.5rem">
+              Signed in as {username}. Click the game, then use the arrow keys (or A/D) to move and Enter to confirm.
             </Text>
             {signOut && (
               <Button onClick={signOut} variation="primary" width="100%" marginBottom="0.5rem">
@@ -271,7 +189,6 @@ useEffect(() => {
         {/* Game in iframe - Center */}
         <View>
           <iframe
-            ref={iframeRef}
             src="/game/index.html"
             title="Space Invaders Game"
             width="800"
