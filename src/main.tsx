@@ -5,8 +5,6 @@ import { AuthGate } from "./auth/AuthGate";
 import "./index.css";
 import { Amplify } from "aws-amplify";
 import outputs from "../amplify_outputs.json";
-import '@aws-amplify/ui-react/styles.css';
-
 
 Amplify.configure(outputs);
 

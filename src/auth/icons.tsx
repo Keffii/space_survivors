@@ -78,6 +78,35 @@ export const ArrowLeftIcon = (p: IconProps) => (
   </Stroke>
 );
 
+export const ChevronDownIcon = (p: IconProps) => (
+  <Stroke {...p}>
+    <polyline points="6 9 12 15 18 9" />
+  </Stroke>
+);
+
+export const LogOutIcon = (p: IconProps) => (
+  <Stroke {...p}>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </Stroke>
+);
+
+export const KeyboardIcon = (p: IconProps) => (
+  <Stroke {...p}>
+    <rect x="2" y="5" width="20" height="14" rx="2" />
+    <path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M18 13h.01M10 13h4" />
+  </Stroke>
+);
+
+export const ChartIcon = (p: IconProps) => (
+  <Stroke {...p}>
+    <line x1="18" y1="20" x2="18" y2="10" />
+    <line x1="12" y1="20" x2="12" y2="4" />
+    <line x1="6" y1="20" x2="6" y2="14" />
+  </Stroke>
+);
+
 export const TrophyIcon = (p: IconProps) => (
   <Stroke {...p}>
     <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
