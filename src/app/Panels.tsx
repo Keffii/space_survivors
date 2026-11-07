@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { ChartIcon, KeyboardIcon, TrophyIcon } from '../auth/icons';
 import type { LeaderboardEntry, Score } from './useHighScores';
+import { displayName } from '../auth/guest';
 
 const LEADERBOARD_SIZE = 10;
 const MY_SCORES_SIZE = 10;
@@ -73,7 +74,7 @@ export function LeaderboardPanel({ loaded, ranking }: { loaded: boolean; ranking
             <li key={e.key} className={`row${e.isMe ? ' row--me' : ''}`}>
               <RankBadge rank={e.rank} />
               <span className="row__name">
-                {e.username}
+                {displayName(e.username)}
                 {e.isMe && <span className="you">You</span>}
               </span>
               <span className="row__score">{numberFormat.format(e.score)}</span>
@@ -83,7 +84,7 @@ export function LeaderboardPanel({ loaded, ranking }: { loaded: boolean; ranking
             <li className="row row--me row--detached">
               <RankBadge rank={me.rank} />
               <span className="row__name">
-                {me.username}
+                {displayName(me.username)}
                 <span className="you">You</span>
               </span>
               <span className="row__score">{numberFormat.format(me.score)}</span>

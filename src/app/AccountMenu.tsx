@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDownIcon, LogOutIcon } from '../auth/icons';
+import { displayName } from '../auth/guest';
 
 export function AccountMenu({ username, onSignOut }: { username: string; onSignOut: () => void }) {
   const [open, setOpen] = useState(false);
@@ -39,16 +40,16 @@ export function AccountMenu({ username, onSignOut }: { username: string; onSignO
         onClick={() => setOpen((o) => !o)}
       >
         <span className="avatar" aria-hidden="true">
-          {username.charAt(0).toUpperCase()}
+          {displayName(username).charAt(0).toUpperCase()}
         </span>
-        <span className="account__name">{username}</span>
+        <span className="account__name">{displayName(username)}</span>
         <ChevronDownIcon width={16} height={16} />
       </button>
       {open && (
         <div className="account__menu" role="menu" aria-label="Account">
           <p className="account__label">
             Signed in as
-            <strong>{username}</strong>
+            <strong>{displayName(username)}</strong>
           </p>
           <button type="button" role="menuitem" className="account__item" onClick={onSignOut} autoFocus>
             <LogOutIcon width={18} height={18} />

@@ -16,6 +16,8 @@ export function authErrorMessage(err: unknown): string {
   const name = errorName(err);
 
   switch (name) {
+    case 'GuestUnavailable':
+      return errorText(err);
     case 'NotAuthorizedException':
       // Cognito uses the same code when it locks sign-in after repeated failures.
       return /attempts exceeded/i.test(errorText(err)) ? RATE_LIMITED : WRONG_CREDENTIALS;

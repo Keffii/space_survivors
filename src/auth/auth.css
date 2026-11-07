@@ -591,6 +591,36 @@
   cursor: progress;
 }
 
+/* "Sign in as guest": same size as the main button, quieter look */
+.auth-page .auth-submit--secondary {
+  margin-top: 0;
+  background: var(--color-input);
+  border: 1px solid var(--color-border);
+  color: var(--color-fg);
+}
+
+.auth-page .auth-submit--secondary:hover:not(:disabled) {
+  filter: none;
+  box-shadow: none;
+  border-color: var(--color-border-hover);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
 .auth-spinner {
   width: 16px;
   height: 16px;

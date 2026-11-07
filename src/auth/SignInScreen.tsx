@@ -3,6 +3,7 @@ import { AuthAlert, type Notice } from './AuthAlert';
 import { APP_NAME } from './content';
 import { authErrorMessage } from './errors';
 import { signInAndContinue, type SignInHandlers } from './flows';
+import { signInAsGuest } from './guest';
 import { PasswordField } from './PasswordField';
 import { SubmitButton } from './SubmitButton';
 
@@ -19,6 +20,7 @@ export function SignInScreen({ initialNotice, autoFocus, onCreateAccount, onForg
   const [password, setPassword] = useState('');
   const [notice, setNotice] = useState<Notice | null>(initialNotice ?? null);
   const [loading, setLoading] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -34,6 +36,19 @@ export function SignInScreen({ initialNotice, autoFocus, onCreateAccount, onForg
     } catch (err) {
       setNotice({ kind: 'error', text: authErrorMessage(err) });
       setLoading(false);
+    }
+  };
+
+  // A throwaway account per visitor, no email or password (see guest.ts)
+  const guest = async () => {
+    setNotice(null);
+    setGuestLoading(true);
+    try {
+      await signInAsGuest();
+      handlers.onSignedIn();
+    } catch (err) {
+      setNotice({ kind: 'error', text: authErrorMessage(err) });
+      setGuestLoading(false);
     }
   };
 
@@ -77,9 +92,23 @@ export function SignInScreen({ initialNotice, autoFocus, onCreateAccount, onForg
         }
       />
 
-      <SubmitButton loading={loading} loadingLabel="Signing in…">
+      <SubmitButton loading={loading} loadingLabel="Signing in…" disabled={guestLoading}>
         Sign in
       </SubmitButton>
+
+      <div className="auth-divider">
+        <span>or</span>
+      </div>
+      <button
+        type="button"
+        className="auth-submit auth-submit--secondary"
+        onClick={guest}
+        disabled={loading || guestLoading}
+        aria-busy={guestLoading}
+      >
+        {guestLoading && <span className="auth-spinner" aria-hidden="true" />}
+        <span>{guestLoading ? 'Signing in…' : 'Sign in as guest'}</span>
+      </button>
 
       <p className="auth-switch">
         New to {APP_NAME}?{' '}
