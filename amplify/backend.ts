@@ -12,6 +12,18 @@ const backend = defineBackend({
 });
 
 // ---------------------------------------------------------------------------
+// Cognito: sign in with a username OR the verified email (email is an alias
+// instead of the username), case-insensitive usernames, Lite tier (free up to
+// 10,000 monthly users). Changing UsernameAttributes/AliasAttributes makes
+// CloudFormation replace the user pool, which deletes existing users.
+// ---------------------------------------------------------------------------
+const { cfnUserPool } = backend.auth.resources.cfnResources;
+cfnUserPool.addPropertyDeletionOverride('UsernameAttributes');
+cfnUserPool.aliasAttributes = ['email'];
+cfnUserPool.usernameConfiguration = { caseSensitive: false };
+cfnUserPool.userPoolTier = 'LITE';
+
+// ---------------------------------------------------------------------------
 // GraphQL endpoint + API key for the highscore Lambda, taken from the
 // deployed AppSync API (no secrets to copy by hand).
 // ---------------------------------------------------------------------------

@@ -1,3 +1,23 @@
+/* Colour tokens (palette taken from the game's sky background) */
+:root {
+  --color-bg: #0f0c22;
+  --color-surface: #08061a;
+  --color-card: #17132f;
+  --color-input: #0a0819;
+  --color-fg: #f2effc;
+  --color-muted: #aaa4c8;
+  --color-border: #2d2752;
+  --color-border-hover: #4b4385;
+  --color-accent: #8b6cff;
+  --color-accent-2: #ff6fb1;
+  --color-accent-strong: #6a45e6;
+  --color-accent-2-strong: #c2387f;
+  --color-link: #bba8ff;
+  --color-danger: #ff8a9c;
+  --color-success: #5fe0a0;
+  --color-info: #8cc8ff;
+}
+
 body {
   margin: 0;
   background: linear-gradient(180deg, rgb(117, 81, 194), rgb(255, 255, 255));
