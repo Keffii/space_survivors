@@ -157,14 +157,13 @@ const CONTROLS: Array<{ keys: string[][]; action: string }> = [
   { keys: [['←', '→'], ['A', 'D']], action: 'Move' },
   { keys: [['↑', '↓'], ['W', 'S']], action: 'Choose an upgrade' },
   { keys: [['Enter'], ['E']], action: 'Confirm' },
-  { keys: [['R']], action: 'Restart after game over' },
+  { keys: [['R']], action: 'Restart' },
 ];
 
 export function HowToPlayPanel() {
   return (
     <section className="panel" aria-labelledby="howto-title">
-      <PanelHeader id="howto-title" icon={<KeyboardIcon width={18} height={18} />} title="How to play" />
-      <p className="panel__text">Click the game first so it receives your key presses.</p>
+      <PanelHeader id="howto-title" icon={<KeyboardIcon width={18} height={18} />} title="How to play" meta="Click the game first" />
       <ul className="controls">
         {CONTROLS.map((c) => (
           <li key={c.action}>
