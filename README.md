@@ -1,68 +1,78 @@
 # SpaceSurvivors
 
-**IoT-driven arcade game using AWS Amplify and ESP32**
+**A retro arcade shooter in the browser, on a serverless AWS backend**
 
-![SpaceSurvivors](https://github.com/user-attachments/assets/1500ba11-9928-4c68-b19a-0658a983b906)
+![SpaceSurvivors sign-in page](docs/screenshots/sign-in.png)
 
-SpaceSurvivors is a browser-based arcade game controlled by a physical ESP32 device or keyboard. Button events are sent via MQTT to AWS IoT Core and consumed in real time by the React frontend. Highscores are persisted through AWS AppSync (GraphQL) and DynamoDB, with optional Discord notifications via webhook and monitoring through Grafana and CloudWatch.
+SpaceSurvivors is a browser game played with the keyboard. The React and TypeScript frontend handles sign-in and the leaderboard, and the game itself runs on an HTML Canvas. Players sign in with Amazon Cognito, scores are saved through AWS AppSync (GraphQL) to DynamoDB, and the leaderboard updates in real time. AWS Amplify Gen 2 defines the backend in code and deploys the frontend and backend on every push.
 
 ---
 
 ## Play Online
 
-**[Play SpaceSurvivors](https://main.d23tyi60vwuclv.amplifyapp.com/)**
+**[Play SpaceSurvivors](https://claude-aws-repo-setup-new-account-ylcx5l.d3bgypkpfmdvri.amplifyapp.com/)** (hosted on AWS Amplify)
 
-- To create an account, use a temporary email from [10MinuteMail](https://10minutemail.com/) for quick registration without sharing your personal email.
-- Once registered, you can view the leaderboard, track highscores, and experience the real-time gameplay (note: click on the game and use your keyboard, WASD+E for controls.)
+- Create an account with a username and email, or sign in as a guest. A guest gets a throwaway account with no email or password, and their scores show as "Guest 3fa9" on the leaderboard.
+- Click the game, then use the keyboard: **A/D** to move, **W/S** to choose a menu option, **E** or **Enter** to confirm, **R** to restart.
+- The game needs a keyboard, so play it on a computer.
 
 ---
+
+## Screenshots
+
+| Start screen | Gameplay |
+| --- | --- |
+| ![Start screen](docs/screenshots/game-start.png) | ![Gameplay](docs/screenshots/gameplay.png) |
+
+---
+
 ## Architecture
 
-![Project Architecture](https://github.com/user-attachments/assets/011b48a3-1bd5-4718-9159-0b2698a1b60e)
+```mermaid
+flowchart LR
+  player([Player's browser])
+  subgraph Amplify["AWS Amplify Hosting"]
+    web["React + Vite app<br/>(game in a Canvas iframe)"]
+  end
+  subgraph Backend["Amplify Gen 2 backend"]
+    cognito["Amazon Cognito<br/>user pool"]
+    presignup["Lambda<br/>pre-sign-up trigger"]
+    appsync["AWS AppSync<br/>GraphQL API"]
+    ddb[("Amazon DynamoDB<br/>HighScore table")]
+    hsapi["Lambda highscoreApi<br/>public Function URL"]
+  end
+  grafana([Grafana, optional])
 
-The architecture is divided into three logical groups:
+  player --> web
+  web -- sign in / guest sign-up --> cognito
+  cognito -- confirms guest accounts --> presignup
+  web -- save score, live leaderboard --> appsync
+  appsync --> ddb
+  hsapi -- API key --> appsync
+  grafana -- top 5 JSON --> hsapi
+```
 
-### Devices & Webhook
-- **ESP32** - Publishes button events over MQTT/TLS to AWS IoT Core.
-- **AWS IoT Core** - MQTT broker that receives device messages and can route them via IoT Rules.
-- **AWS Lambda** - Processes IoT events and can forward notifications to external services.
-- **Discord Webhook** - Receives notifications (e.g., new highscores) from a Lambda function.
+### Frontend
+- **React + Vite + TypeScript** - Sign-in screens, account menu, player card and live leaderboard.
+- **HTML Canvas game** - Runs in an iframe (`public/game`) and sends the final score to the React app with `postMessage`.
+- **AWS Amplify Hosting** - Builds and serves the app from GitHub; `amplify.yml` deploys the backend first, then the frontend.
 
-### Backend & Data
-- **AWS AppSync (GraphQL)** - API layer for creating and querying highscores; supports real-time subscriptions.
-- **Amazon DynamoDB** - Persistent storage for highscores, devices, and game data.
-- **AWS Lambda** - Backend functions for data processing, external integrations, or scheduled tasks.
-- **Amazon CloudWatch** - Logs and metrics from Lambda and other AWS services.
-- **Grafana** - Dashboards for visualizing CloudWatch metrics or Timestream data.
+### Auth
+- **Amazon Cognito** - Sign in with a username or the verified email (usernames are case-insensitive).
+- **Guest sign-in** - The app creates a `guest-…` Cognito user with a random password. A pre-sign-up Lambda trigger (`amplify/auth/pre-sign-up`) confirms these accounts without an email.
 
-### Frontend & Auth
-- **Amazon Cognito** - User authentication; provides temporary AWS credentials to the browser for IoT and AppSync access.
-- **SpaceSurvivors (React + Amplify)** - The web application that hosts the game, receives IoT button events via WebSocket, and displays leaderboards.
+### Data
+- **AWS AppSync (GraphQL)** - The `HighScore` model. Players write their own scores, and every signed-in player can read all scores. The leaderboard uses `observeQuery`, so new scores appear without a reload.
+- **Amazon DynamoDB** - Stores the highscores.
+- **`highscoreApi` Lambda** - A public Function URL that returns the top scores (one per player) as JSON, for example for a Grafana dashboard.
 
 ---
 
-## Hardware
+## Tech stack
 
-- ESP32 development board
-- Push buttons (Left, Right, Confirm)
-- Jumper wires and breadboard
-
----
-
-## Software & Services
-
-- **AWS**
-  - IoT Core
-  - Lambda
-  - AppSync (GraphQL)
-  - DynamoDB
-  - Cognito
-  - CloudWatch
-- **Amplify** - Frontend hosting, backend provisioning, CI/CD
-- **Grafana** - Metrics visualization
-- **Discord** - Webhook notifications
-- **React + Vite** - Frontend framework
-- **Arduino / PlatformIO** - ESP32 firmware development
+- **Frontend:** React 18, TypeScript, Vite, HTML Canvas
+- **Backend (Amplify Gen 2, TypeScript):** Cognito, AppSync, DynamoDB, Lambda
+- **Hosting and CI/CD:** AWS Amplify Hosting
 
 ---
 
@@ -74,111 +84,47 @@ SpaceSurvivors uses HTML Canvas for rendering all game graphics, providing smoot
 - **Enemy Models** - Animated slime mobs in various colors with attack and movement animations. Assets from [CraftPix Free Slime Mobs Pack](https://craftpix.net/freebies/free-slime-mobs-pixel-art-top-down-sprite-pack/)
 - **Background** - Sky with clouds. Assets from [CraftPix Free Sky Background Set](https://craftpix.net/freebies/free-sky-with-clouds-background-pixel-art-set/)
 
-The Canvas API enables efficient sprite rendering, frame-by-frame animation, and real-time game state updates synchronized with the physical controller input from the ESP32 device.
+The Canvas API handles sprite rendering, frame-by-frame animation and real-time game state updates.
 
 ---
 
-## Setup ESP32
-
-1. Create an IoT Thing in **AWS IoT Core → All devices → Things → Create thing**.
-2. Auto-generate a certificate and attach a policy with permissions for `iot:Connect`, `iot:Publish`, `iot:Subscribe`, and `iot:Receive` scoped to your device and topic.
-3. Download the certificate bundle (device cert, private key, Amazon Root CA).
-4. Flash the ESP32 with firmware that:
-   - Connects to WiFi
-   - Establishes an MQTT/TLS connection to your IoT Core endpoint
-   - Publishes button events as JSON to `deviceId/events/button`
-5. Verify messages arrive using the **MQTT test client** in the AWS Console.
-
-### Example IoT policy (JSON):
-
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": "iot:Connect",
-      "Resource": "arn:aws:iot:REGION:ACCOUNT:client/DEVICE_ID"
-    },
-    {
-      "Effect": "Allow",
-      "Action": "iot:Publish",
-      "Resource": "arn:aws:iot:REGION:ACCOUNT:topic/DEVICE_ID/events/button"
-    },
-    {
-      "Effect": "Allow",
-      "Action": "iot:Subscribe",
-      "Resource": "arn:aws:iot:REGION:ACCOUNT:topicfilter/DEVICE_ID/events/button"
-    },
-    {
-      "Effect": "Allow",
-      "Action": "iot:Receive",
-      "Resource": "arn:aws:iot:REGION:ACCOUNT:topic/DEVICE_ID/events/button"
-    }
-  ]
-}
-```
-
----
-
-## Setup AWS (Amplify)
+## Setup
 
 ### Prerequisites
-- Node.js and npm installed
-- AWS account with Amplify access
+- Node.js 22 and npm
+- An AWS account with Amplify access
+
+### Deploy
+The Amplify Gen 2 backend is defined in `amplify/`. Connect the repository in the Amplify Console, and `amplify.yml` deploys the backend and frontend on every push. No secrets or manual IAM setup are needed.
+
+**Setting up a new AWS account?** Follow [`AWS_SETUP.md`](AWS_SETUP.md).
 
 ### Local development
 ```bash
 npm install
+npx ampx generate outputs --app-id <AMPLIFY_APP_ID> --branch <BRANCH>
 npm run dev
 ```
 
-### Deploy backend
-The Amplify Gen 2 backend is defined in `amplify/`. Connect the repository in the Amplify Console; `amplify.yml` deploys the backend and frontend on every push.
-
-Besides Cognito, AppSync and DynamoDB, the backend also provisions the IoT Core rules, the IoT/IAM permissions for signed-in browsers, and looks up the account's IoT endpoint, so no manual IAM setup is needed.
-
-**Setting up a new AWS account?** Follow [`AWS_SETUP.md`](AWS_SETUP.md).
+`amplify_outputs.json` tells the app which backend to use. Regenerate it after backend changes, or run `npx ampx sandbox` for a personal backend.
 
 ---
 
 ## Security
 
-- **Transport encryption** - MQTT/TLS (device) and WSS (browser).
-- **Device authentication** - X.509 certificates registered in AWS IoT.
-- **User authentication** - Cognito User Pool; temporary credentials for IoT and AppSync.
-- **Least-privilege** - Narrow IAM policies scoped to specific topics and resources.
-- **Secrets management** - Use AWS Secrets Manager for API keys and webhook URLs.
+- **User authentication** - Cognito user pool; the browser gets short-lived tokens for AppSync.
+- **Per-player data** - Owner-based rules on the `HighScore` model, so players can only change their own scores.
+- **Transport encryption** - HTTPS for the site, the GraphQL API and the Function URL.
+- **No hand-copied secrets** - The Lambda gets the AppSync URL and API key from the deployed backend at deploy time.
 
 ---
 
-## Visualization
+## Grafana (optional)
 
-- **React frontend** - Real-time leaderboard using AppSync subscriptions.
-- **Grafana** - Dashboards connected to CloudWatch or Timestream for device/Lambda metrics.
-- **Discord** - Instant notifications for events like new highscores.
+The `highscoreApi` Function URL (in `amplify_outputs.json` → `custom.highscoreApiUrl`) returns the top 5 players as JSON. Add it as a Grafana Infinity or JSON API data source to chart the leaderboard.
 
 ---
 
-## Grafana
+## History
 
-![Grafana Dashboard](https://github.com/user-attachments/assets/f1e8266b-835e-486c-9bc8-48baa2c3d746)
-
-The Grafana dashboard provides insight into the current leaderboard which is top 5 highscores.
-
----
-
-## Discord Webhook
-
-![Discord Events](https://github.com/user-attachments/assets/6ff2c7f8-ea7a-4be3-9b68-476163be764a)
-
-Discord webhook integration shows connected/disconnected status message when a player connects their ESP32.
-
----
-
-## Scalability
-
-- **Support for multiple devices** - In realtime track connected IoTCore devices and choose your device from the dropdown list
-- **Renew cognito tokens yearly** - At the moment cognito tokens doesn't have a expire date. Make cognito tokens only alive for 365 days and ask for the user to renew their token yearly
-- **Expand gameanalytics** - Track how long each user is playing per session, their events (button events)
-- **Threshold message for when near token cap** - Add a threshold message rule for when the project expands and need more tokens than provided by the free plan
+Earlier versions used an ESP32 with push buttons as a physical controller, sending button events over MQTT to AWS IoT Core, with Discord webhook notifications when a controller connected. That was removed to make the project a web-only demo that deploys with no hardware or secrets. It is still in the git history before commit `26cedf8`.
